@@ -25,13 +25,6 @@ public final class WheelController {
     private static Identifier inputOwnerSpell;
     private static SpellCast.Process inputOwnerProcess;
     private static WrappedKeybinding.Unwrapped inputOwnerBinding;
-    private static InputSource inputOwnerSource = InputSource.NONE;
-
-    private enum InputSource {
-        NONE,
-        USE_KEY,
-        SHORTCUT
-    }
 
     private WheelController() {}
 
@@ -166,7 +159,6 @@ public final class WheelController {
         }
         SpellHotbar.INSTANCE.slots = List.copyOf(routed);
         SpellHotbar.INSTANCE.structuredSlots = new SpellHotbar.StructuredSlots(routedSelected, List.copyOf(shortcutSlots));
-        SpellInputTrace.routed(BetterSpellcastingClient.selectedSpell(), routedSelected, shortcutSlots, options);
     }
 
     private static WrappedKeybinding normalizedShortcut(GameOptions options,
@@ -207,8 +199,6 @@ public final class WheelController {
             public Unwrapped get(GameOptions currentOptions) {
                 if (hasActiveCast()) {
                     if (!spellId.equals(inputOwnerSpell)) return null;
-                    SpellInputTrace.ownerPoll(spellId, inputOwnerBinding, inputOwnerSource.name(),
-                            inputPass.name(), selected, currentOptions);
                     return inputOwnerBinding;
                 }
                 if (inputPass == InputPass.SHORTCUT) {
@@ -291,19 +281,9 @@ public final class WheelController {
         var progress = ((SpellCasterClient) client.player).getSpellCastProgress();
         if (handled != null && progress != null
                 && handled.spell().id().equals(progress.process().id())) {
-            boolean changed = inputOwnerSpell == null
-                    || !inputOwnerSpell.equals(progress.process().id())
-                    || inputOwnerProcess != progress.process()
-                    || inputOwnerBinding == null
-                    || inputOwnerBinding.keyBinding() != handled.keyBinding()
-                    || inputOwnerBinding.vanillaHandle() != handled.category();
             inputOwnerSpell = progress.process().id();
             inputOwnerProcess = progress.process();
             inputOwnerBinding = new WrappedKeybinding.Unwrapped(handled.keyBinding(), handled.category());
-            inputOwnerSource = handled.category() == WrappedKeybinding.Category.USE_KEY
-                    || handled.keyBinding() == BetterSpellcastingClient.castSelectedKey()
-                    ? InputSource.USE_KEY : InputSource.SHORTCUT;
-            if (changed) SpellInputTrace.castInputOwner(inputOwnerSpell, inputOwnerBinding, inputOwnerSource.name());
         } else if (progress == null || inputOwnerProcess != null
                 && inputOwnerProcess != progress.process()) {
             resetInputOwner();
@@ -311,13 +291,9 @@ public final class WheelController {
     }
 
     public static void resetInputOwner() {
-        if (inputOwnerSpell != null) {
-            SpellInputTrace.castInputOwner(null, null, InputSource.NONE.name());
-        }
         inputOwnerSpell = null;
         inputOwnerProcess = null;
         inputOwnerBinding = null;
-        inputOwnerSource = InputSource.NONE;
     }
 
 }
