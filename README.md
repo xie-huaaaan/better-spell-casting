@@ -19,4 +19,17 @@ $env:JAVA_HOME = 'C:\Program Files\Zulu\zulu-25'
 
 The local Element Awakening installation is used automatically when that default path exists. A public checkout should pass the Spell Engine JAR path explicitly; TinyConfig is extracted from that JAR during compilation.
 
-The remapped distributable is written to `build/libs/better-spell-casting-1.0.1.jar`.
+The remapped distributable is written to `build/libs/better-spell-casting-fabric-1.0.1+1.20.1.jar`.
+
+## Version branches
+
+`main` is the integration baseline. Each supported Minecraft/loader target has its own branch:
+
+- `1.20.1-fabric` (currently adapted)
+- `1.20.1-forge`
+- `1.21.1-fabric`
+- `1.21.1-neoforge`
+- `26.1-fabric`
+- `26.1-neoforge`
+
+The remaining branches are porting starting points until their platform implementations are completed.
