@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class SpellHotbarMixin {
     @Inject(method = "handle(Lnet/minecraft/client/network/ClientPlayerEntity;Lnet/spell_engine/client/input/SpellHotbar$Slot;Lnet/minecraft/client/option/GameOptions;)Lnet/spell_engine/client/input/SpellHotbar$Handle;",
             at = @At("HEAD"), cancellable = true)
-    private void spellCycleWheel$bypassBowUse(ClientPlayerEntity player, SpellHotbar.Slot slot,
+    private void betterSpellcasting$bypassBowUse(ClientPlayerEntity player, SpellHotbar.Slot slot,
                                                GameOptions options,
                                                CallbackInfoReturnable<SpellHotbar.Handle> cir) {
         if (com.ysjx.betterspellcasting.BowInputController.bypassSpellInput()) {
@@ -26,13 +26,13 @@ public abstract class SpellHotbarMixin {
     }
 
     @Inject(method = "update", at = @At("RETURN"))
-    private void spellCycleWheel$route(ClientPlayerEntity player, GameOptions options, CallbackInfoReturnable<Boolean> cir) {
+    private void betterSpellcasting$route(ClientPlayerEntity player, GameOptions options, CallbackInfoReturnable<Boolean> cir) {
         WheelController.routeHotbar(net.minecraft.client.MinecraftClient.getInstance());
     }
 
     @ModifyVariable(method = "handle(Lnet/minecraft/client/network/ClientPlayerEntity;Lnet/spell_engine/client/input/SpellHotbar$Slot;Lnet/minecraft/client/option/GameOptions;)Lnet/spell_engine/client/input/SpellHotbar$Handle;",
             at = @At("HEAD"), argsOnly = true, ordinal = 0)
-    private SpellHotbar.Slot spellCycleWheel$routeFocusedSlot(SpellHotbar.Slot requested) {
+    private SpellHotbar.Slot betterSpellcasting$routeFocusedSlot(SpellHotbar.Slot requested) {
         if (com.ysjx.betterspellcasting.BetterSpellcastingClient.config().mode == com.ysjx.betterspellcasting.WheelMode.ORIGINAL) return requested;
         SpellHotbar.Slot canonical = SpellHotbar.INSTANCE.structuredSlots.onUseKey();
         return canonical == null ? requested : canonical;
@@ -40,7 +40,7 @@ public abstract class SpellHotbarMixin {
 
     @Inject(method = "handle(Lnet/minecraft/client/network/ClientPlayerEntity;Ljava/util/List;Lnet/minecraft/client/option/GameOptions;)Lnet/spell_engine/client/input/SpellHotbar$Handle;",
             at = @At("HEAD"))
-    private void spellCycleWheel$traceHandleList(ClientPlayerEntity player, List<SpellHotbar.Slot> slots,
+    private void betterSpellcasting$beginHandleList(ClientPlayerEntity player, List<SpellHotbar.Slot> slots,
                                                   GameOptions options,
                                                   CallbackInfoReturnable<SpellHotbar.Handle> cir) {
         WheelController.beginHandle(slots);
@@ -48,7 +48,7 @@ public abstract class SpellHotbarMixin {
 
     @Inject(method = "handle(Lnet/minecraft/client/network/ClientPlayerEntity;Ljava/util/List;Lnet/minecraft/client/option/GameOptions;)Lnet/spell_engine/client/input/SpellHotbar$Handle;",
             at = @At("RETURN"))
-    private void spellCycleWheel$traceHandleListResult(ClientPlayerEntity player, List<SpellHotbar.Slot> slots,
+    private void betterSpellcasting$finishHandleList(ClientPlayerEntity player, List<SpellHotbar.Slot> slots,
                                                         GameOptions options,
                                                         CallbackInfoReturnable<SpellHotbar.Handle> cir) {
         WheelController.finishHandle(cir.getReturnValue());
@@ -57,7 +57,7 @@ public abstract class SpellHotbarMixin {
 
     @Inject(method = "handle(Lnet/minecraft/client/network/ClientPlayerEntity;Lnet/spell_engine/client/input/SpellHotbar$Slot;Lnet/minecraft/client/option/GameOptions;)Lnet/spell_engine/client/input/SpellHotbar$Handle;",
             at = @At("RETURN"))
-    private void spellCycleWheel$traceHandleSlotResult(ClientPlayerEntity player, SpellHotbar.Slot slot,
+    private void betterSpellcasting$finishHandleSlot(ClientPlayerEntity player, SpellHotbar.Slot slot,
                                                         GameOptions options,
                                                         CallbackInfoReturnable<SpellHotbar.Handle> cir) {
     }

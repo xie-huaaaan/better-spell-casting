@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(value = HudRenderHelper.SpellHotBarWidget.class)
 public abstract class SpellHotbarWidgetMixin {
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
-    private static void spellCycleWheel$hideOriginal(DrawContext context, int screenWidth, int screenHeight,
+    private static void betterSpellcasting$hideOriginal(DrawContext context, int screenWidth, int screenHeight,
                                                        HudRenderHelper.SpellHotBarWidget.ViewModel viewModel,
                                                        CallbackInfo ci) {
         if (!com.ysjx.betterspellcasting.WheelController.castSlots().isEmpty()) {

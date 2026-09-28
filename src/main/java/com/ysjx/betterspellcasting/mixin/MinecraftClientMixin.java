@@ -16,7 +16,7 @@ public abstract class MinecraftClientMixin {
     @Redirect(method = "handleInputEvents",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/client/network/ClientPlayerInteractionManager;stopUsingItem(Lnet/minecraft/entity/player/PlayerEntity;)V"))
-    private void spellCycleWheel$keepBowUse(ClientPlayerInteractionManager manager,
+    private void betterSpellcasting$keepBowUse(ClientPlayerInteractionManager manager,
                                              net.minecraft.entity.player.PlayerEntity player) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (!BowInputController.suppressVanillaStop(client)) {
@@ -25,12 +25,12 @@ public abstract class MinecraftClientMixin {
     }
 
     @Inject(method = "handleInputEvents", at = @At("HEAD"))
-    private void spellCycleWheel$handleBowInput(CallbackInfo ci) {
+    private void betterSpellcasting$handleBowInput(CallbackInfo ci) {
         BowInputController.tick((MinecraftClient) (Object) this);
     }
 
     @Inject(method = "doAttack", at = @At("HEAD"), cancellable = true)
-    private void spellCycleWheel$blockBowAttack(CallbackInfoReturnable<Boolean> cir) {
+    private void betterSpellcasting$blockBowAttack(CallbackInfoReturnable<Boolean> cir) {
         MinecraftClient client = (MinecraftClient) (Object) this;
         if (BowInputController.blocksAttack(client)) {
             cir.setReturnValue(false);
@@ -41,13 +41,13 @@ public abstract class MinecraftClientMixin {
             method = "handleInputEvents",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;handleBlockBreaking(Z)V"),
             index = 0)
-    private boolean spellCycleWheel$blockBowMining(boolean breaking) {
+    private boolean betterSpellcasting$blockBowMining(boolean breaking) {
         MinecraftClient client = (MinecraftClient) (Object) this;
         return BowInputController.blocksAttack(client) ? false : breaking;
     }
 
     @Inject(method = "doItemUse", at = @At("HEAD"), cancellable = true)
-    private void spellCycleWheel$blockUseWhileOpen(CallbackInfo ci) {
+    private void betterSpellcasting$blockUseWhileOpen(CallbackInfo ci) {
         MinecraftClient client = (MinecraftClient) (Object) this;
         if (BetterSpellcastingClient.shouldBlockUse(client)) {
             ci.cancel();
