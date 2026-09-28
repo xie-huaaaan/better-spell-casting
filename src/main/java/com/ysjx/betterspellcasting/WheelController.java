@@ -139,7 +139,7 @@ public final class WheelController {
                 }
                 continue;
             }
-            // Keep the focused spell in both Spell Engine input collections, like spell-cycle.
+            // Keep the focused spell in both Spell Engine input collections so both input paths agree.
             WrappedKeybinding shortcut = normalizedShortcut(options, shortcuts, castIndex);
             castIndex++;
             boolean selectedSlot = slot.spell().id().equals(BetterSpellcastingClient.selectedSpell());
@@ -189,8 +189,8 @@ public final class WheelController {
 
     /**
      * The focused slot is present in both the full hotbar and shortcut lists. Its binding
-     * selects the input source from the list being processed, matching spell-cycle's routing
-     * model while keeping the same Slot instance for the use-key path.
+     * selects the input source from the list being processed while keeping the same Slot
+     * instance for the use-key path.
      */
     private static WrappedKeybinding routedBinding(GameOptions options, WrappedKeybinding shortcut,
                                                     Identifier spellId, boolean selected) {
