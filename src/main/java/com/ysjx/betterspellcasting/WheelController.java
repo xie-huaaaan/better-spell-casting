@@ -8,7 +8,7 @@ import net.spell_engine.client.input.SpellHotbar;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.client.input.WrappedKeybinding;
 import net.spell_engine.internals.casting.SpellCast;
-import net.spell_engine.internals.casting.SpellCasterClient;
+import net.spell_engine.internals.casting.SpellCaster;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,12 +31,16 @@ public final class WheelController {
     public static List<SpellHotbar.Slot> castSlots() {
         // Spell Engine has already applied hand, container, mode, and availability rules.
         // Keeping this snapshot intact prevents the DLC from inventing a second candidate policy.
-        return rawCastSlots();
+        return rawCastSlots().stream().filter(slot -> spellId(slot) != null).toList();
     }
 
     private static List<SpellHotbar.Slot> rawCastSlots() {
         return SpellHotbar.INSTANCE == null || SpellHotbar.INSTANCE.slots == null
                 ? List.of() : SpellHotbar.INSTANCE.slots;
+    }
+
+    public static Identifier spellId(SpellHotbar.Slot slot) {
+        return slot == null || slot.option() == null ? null : slot.option().id();
     }
 
     public static boolean hasSpells() {
@@ -49,17 +53,17 @@ public final class WheelController {
             SpellSelectionState.syncCandidates(List.of());
             return;
         }
-        SpellSelectionState.syncCandidates(slots.stream().map(slot -> slot.spell().id()).toList());
+        SpellSelectionState.syncCandidates(slots.stream().map(WheelController::spellId).toList());
         Identifier current = BetterSpellcastingClient.selectedSpell();
         for (SpellHotbar.Slot slot : slots) {
-            if (slot.spell().id().equals(current)) return;
+            if (spellId(slot).equals(current)) return;
         }
-        SpellSelectionState.select(slots.get(0).spell().id());
+        SpellSelectionState.select(spellId(slots.get(0)));
     }
 
     public static void refresh(MinecraftClient client) {
         List<SpellHotbar.Slot> slots = castSlots();
-        SpellSelectionState.syncCandidates(slots.stream().map(slot -> slot.spell().id()).toList());
+        SpellSelectionState.syncCandidates(slots.stream().map(WheelController::spellId).toList());
     }
 
     public static void confirmSelection(MinecraftClient client) {
@@ -75,7 +79,7 @@ public final class WheelController {
         List<SpellHotbar.Slot> slots = castSlots();
         Identifier selected = BetterSpellcastingClient.selectedSpell();
         for (int i = 0; i < slots.size(); i++) {
-            if (slots.get(i).spell().id().equals(selected)) return i;
+            if (spellId(slots.get(i)).equals(selected)) return i;
         }
         return slots.isEmpty() ? -1 : 0;
     }
@@ -100,7 +104,7 @@ public final class WheelController {
         double angle = Math.atan2(dx, -dy);
         if (angle < 0) angle += Math.PI * 2;
         int index = (int) Math.floor((angle + Math.PI * 2 / slots.size() / 2) / (Math.PI * 2 / slots.size())) % slots.size();
-        BetterSpellcastingClient.setSelectedSpell(slots.get(index).spell().id());
+        BetterSpellcastingClient.setSelectedSpell(spellId(slots.get(index)));
     }
 
     public static void routeHotbar(MinecraftClient client) {
@@ -112,7 +116,7 @@ public final class WheelController {
             resetInputOwner();
             return;
         }
-        List<SpellHotbar.Slot> slots = castSlots();
+        List<SpellHotbar.Slot> slots = rawCastSlots();
         if (slots.isEmpty()) {
             resetInputOwner();
             return;
@@ -126,7 +130,8 @@ public final class WheelController {
         int castIndex = 0;
         SpellHotbar.Slot routedSelected = null;
         for (SpellHotbar.Slot slot : slots) {
-            if (slot.spell() == null) {
+            Identifier spellId = spellId(slot);
+            if (spellId == null) {
                 routed.add(slot);
                 continue;
             }
@@ -134,7 +139,7 @@ public final class WheelController {
                 // ITEM_USE entries belong to Spell Engine's item-use path and do not consume
                 // one of its numbered spell bindings.
                 routed.add(slot);
-                if (slot.spell().id().equals(BetterSpellcastingClient.selectedSpell())) {
+                if (spellId.equals(BetterSpellcastingClient.selectedSpell())) {
                     routedSelected = slot;
                 }
                 continue;
@@ -142,13 +147,13 @@ public final class WheelController {
             // Keep the focused spell in both Spell Engine input collections so both input paths agree.
             WrappedKeybinding shortcut = normalizedShortcut(options, shortcuts, castIndex);
             castIndex++;
-            boolean selectedSlot = slot.spell().id().equals(BetterSpellcastingClient.selectedSpell());
-            boolean ownerSlot = slot.spell().id().equals(activeOwnerSpell);
+            boolean selectedSlot = spellId.equals(BetterSpellcastingClient.selectedSpell());
+            boolean ownerSlot = spellId.equals(activeOwnerSpell);
             boolean shortcutEnabled = BetterSpellcastingClient.isShortcutCastingEnabled() && shortcut != null;
             var binding = selectedSlot || ownerSlot
-                    ? routedBinding(options, shortcutEnabled ? shortcut : null, slot.spell().id(), selectedSlot)
+                    ? routedBinding(options, shortcutEnabled ? shortcut : null, spellId, selectedSlot)
                     : (shortcutEnabled ? shortcut : null);
-            SpellHotbar.Slot routedSlot = new SpellHotbar.Slot(slot.spell(), slot.castMode(), binding, slot.modifier());
+            SpellHotbar.Slot routedSlot = new SpellHotbar.Slot(slot.option(), slot.itemStack(), binding, slot.modifier());
             routed.add(routedSlot);
             if (selectedSlot) {
                 routedSelected = routedSlot;
@@ -246,7 +251,7 @@ public final class WheelController {
     private static boolean hasActiveCast() {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.player == null) return false;
-        var progress = ((SpellCasterClient) client.player).getSpellCastProgress();
+        var progress = ((SpellCaster.Client) client.player).getSpellCastProgress();
         if (progress == null || inputOwnerProcess == null || progress.process() != inputOwnerProcess) {
             resetInputOwner();
             return false;
@@ -278,9 +283,9 @@ public final class WheelController {
             resetInputOwner();
             return;
         }
-        var progress = ((SpellCasterClient) client.player).getSpellCastProgress();
+        var progress = ((SpellCaster.Client) client.player).getSpellCastProgress();
         if (handled != null && progress != null
-                && handled.spell().id().equals(progress.process().id())) {
+                && handled.spell().matchesId(progress.process().id())) {
             inputOwnerSpell = progress.process().id();
             inputOwnerProcess = progress.process();
             inputOwnerBinding = new WrappedKeybinding.Unwrapped(handled.keyBinding(), handled.category());

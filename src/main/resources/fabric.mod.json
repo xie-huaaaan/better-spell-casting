@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "better_spellcasting",
+  "id": "better-spell-casting",
   "version": "${version}",
   "name": "Better Spellcasting",
   "description": "Client-side enhancements for spell selection, casting controls, and HUDs.",
@@ -10,11 +10,11 @@
   "entrypoints": {
     "client": ["com.ysjx.betterspellcasting.BetterSpellcastingClient"]
   },
-  "mixins": ["better_spellcasting.mixins.json"],
+  "mixins": ["better-spell-casting.mixins.json"],
   "depends": {
     "minecraft": "1.20.1",
-    "fabricloader": ">=0.15.0",
+    "fabricloader": ">=0.16.10",
     "fabric": "*",
-    "spell_engine": ">=0.15.12"
+    "spell_engine": ">=1.10.7"
   }
 }

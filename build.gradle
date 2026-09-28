@@ -15,6 +15,17 @@ repositories {
     maven { url = 'https://maven.terraformersmc.com/releases/' }
 }
 
+loom {
+    runs {
+        client {
+            client()
+            setConfigName('Fabric Client')
+            ideConfigGenerated(true)
+            runDir(providers.gradleProperty('run_dir').orElse('run').get())
+        }
+    }
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
@@ -22,7 +33,7 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     def spellEnginePath = providers.gradleProperty('spell_engine_jar').orNull
             ?: System.getenv('SPELL_ENGINE_JAR')
-            ?: 'D:/HMCL/.minecraft/versions/元素觉醒1.4.6/mods/spell_engine-0.15.12+1.20.1.jar'
+            ?: 'D:/projects/better-spell-casting/mc-version/.minecraft/versions/1.20.1-Fabric 0.19.5/mods/[法术引擎] spell_engine-fabric-1.10.7+1.20.1.jar'
     def spellEngineJar = file(spellEnginePath)
     if (!spellEngineJar.isFile()) {
         throw new GradleException("Spell Engine JAR not found. Set -Pspell_engine_jar=<path> or SPELL_ENGINE_JAR.")
@@ -35,9 +46,10 @@ dependencies {
         outputs.file(tinyConfigJar)
         doLast {
             tinyConfigJar.parentFile.mkdirs()
-            def entryName = 'META-INF/jars/TinyConfig-2.3.2.jar'
             new java.util.zip.ZipFile(spellEngineJar).withCloseable { zip ->
-                def entry = zip.getEntry(entryName)
+                def entry = zip.entries().find { it.name.toLowerCase(Locale.ROOT).startsWith('meta-inf/jars/')
+                        && it.name.toLowerCase(Locale.ROOT).contains('tiny-config')
+                        && it.name.toLowerCase(Locale.ROOT).endsWith('.jar') }
                 if (entry == null) throw new GradleException("TinyConfig was not found in $spellEngineJar")
                 zip.getInputStream(entry).withCloseable { input ->
                     tinyConfigJar.withOutputStream { output -> input.transferTo(output) }

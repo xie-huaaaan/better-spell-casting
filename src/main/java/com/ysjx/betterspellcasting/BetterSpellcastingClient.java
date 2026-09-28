@@ -21,7 +21,7 @@ import org.lwjgl.glfw.GLFW;
 
 /** Owns Better Spellcasting's client lifecycle, input bindings, and mode state. */
 public final class BetterSpellcastingClient implements ClientModInitializer {
-    public static final String MOD_ID = "better_spellcasting";
+    public static final String MOD_ID = "better-spell-casting";
     private static WheelConfig config;
     private static KeyBinding selectKey;
     private static KeyBinding castSelectedKey;
@@ -31,11 +31,11 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
     public void onInitializeClient() {
         config = WheelConfig.load();
         selectKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.better_spellcasting.select_spell", InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_X, "key.categories.better_spellcasting"));
+                "key.better-spell-casting.select_spell", InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_X, "key.categories.better-spell-casting"));
         castSelectedKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.better_spellcasting.cast_selected", InputUtil.Type.MOUSE,
-                GLFW.GLFW_MOUSE_BUTTON_RIGHT, "key.categories.better_spellcasting"));
+                "key.better-spell-casting.cast_selected", InputUtil.Type.MOUSE,
+                GLFW.GLFW_MOUSE_BUTTON_RIGHT, "key.categories.better-spell-casting"));
         ClientTickEvents.END_CLIENT_TICK.register(BetterSpellcastingClient::tick);
         HudRenderCallback.EVENT.register(WheelRenderer::render);
         ScreenEvents.AFTER_INIT.register(BetterSpellcastingClient::addSettingsEntry);
@@ -121,11 +121,11 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
         int y = done != null ? Math.max(0, done.getY() - 24) : old.getY();
         int w = anchor.getWidth();
         while (y > 0 && overlapsVisibleButton(screen, old, x, y, w, 20)) y--;
-        Screens.getButtons(screen).add(ButtonWidget.builder(Text.translatable("screen.better_spellcasting.entry"),
+        Screens.getButtons(screen).add(ButtonWidget.builder(Text.translatable("screen.better-spell-casting.entry"),
                         ignored -> client.setScreen(new WheelSettingsScreen(screen)))
                 .dimensions(x, y, w, 20)
                 .tooltip(net.minecraft.client.gui.tooltip.Tooltip.of(
-                        Text.translatable("screen.better_spellcasting.entry.tooltip")))
+                        Text.translatable("screen.better-spell-casting.entry.tooltip")))
                 .build());
     }
 

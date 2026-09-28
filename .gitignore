@@ -7,3 +7,20 @@ out/
 mc-version/
 .deps/
 
+# Files extracted from test JARs and Loom's development run.
+/run/
+/META-INF/
+/assets/
+/data/
+/net/
+/resourcepacks/
+/fabric.mod.json
+/better-spell-casting-refmap.json
+/better-spell-casting.mixins.json
+/icon.png
+/shouldersurfing_plugin.json
+/spell_engine-fabric.mixins.json
+/spell_engine.accesswidener
+/spell_engine.mixins.json
+/architectury_inject_spell_engine_common_*/
+

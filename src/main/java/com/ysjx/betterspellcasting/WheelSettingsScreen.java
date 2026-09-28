@@ -20,7 +20,7 @@ public final class WheelSettingsScreen extends Screen {
     private int descriptionY;
 
     public WheelSettingsScreen(Screen parent) {
-        super(Text.translatable("screen.better_spellcasting.title"));
+        super(Text.translatable("screen.better-spell-casting.title"));
         this.parent = parent;
         this.draft = BetterSpellcastingClient.config().copy();
     }
@@ -68,7 +68,7 @@ public final class WheelSettingsScreen extends Screen {
         scaleSlider = addDrawableChild(new ScaleSlider(contentX, y, contentWidth, 20, draft.hudScale));
 
         int actionWidth = (contentWidth - 8) / 2;
-        addDrawableChild(ButtonWidget.builder(Text.translatable("screen.better_spellcasting.save"), button -> saveAndClose())
+        addDrawableChild(ButtonWidget.builder(Text.translatable("screen.better-spell-casting.save"), button -> saveAndClose())
                 .dimensions(contentX, height - 28, actionWidth, 20).build());
         addDrawableChild(ButtonWidget.builder(Text.translatable("gui.cancel"), button -> close())
                 .dimensions(contentX + contentWidth - actionWidth, height - 28, actionWidth, 20).build());
@@ -84,7 +84,7 @@ public final class WheelSettingsScreen extends Screen {
     }
 
     private Text modeText() {
-        return Text.translatable("screen.better_spellcasting.mode", Text.translatable(draft.mode.translationKey()));
+        return Text.translatable("screen.better-spell-casting.mode", Text.translatable(draft.mode.translationKey()));
     }
 
     private Text modeDescription() {
@@ -92,20 +92,20 @@ public final class WheelSettingsScreen extends Screen {
     }
 
     private Text shortcutText() {
-        return Text.translatable("screen.better_spellcasting.shortcut", Text.translatable(draft.shortcutCasting ? "options.on" : "options.off"));
+        return Text.translatable("screen.better-spell-casting.shortcut", Text.translatable(draft.shortcutCasting ? "options.on" : "options.off"));
     }
 
     private Text reverseText() {
-        return Text.translatable("screen.better_spellcasting.reverse_scroll", Text.translatable(draft.reverseScroll ? "options.on" : "options.off"));
+        return Text.translatable("screen.better-spell-casting.reverse_scroll", Text.translatable(draft.reverseScroll ? "options.on" : "options.off"));
     }
 
     private Text bowLeftClickText() {
-        return Text.translatable("screen.better_spellcasting.bow_left_click",
+        return Text.translatable("screen.better-spell-casting.bow_left_click",
                 Text.translatable(draft.bowLeftClick ? "options.on" : "options.off"));
     }
 
     private Text hudText() {
-        return Text.translatable("screen.better_spellcasting.hud", Text.translatable(draft.hudStyle.translationKey()));
+        return Text.translatable("screen.better-spell-casting.hud", Text.translatable(draft.hudStyle.translationKey()));
     }
 
     private void saveAndClose() {
@@ -143,7 +143,7 @@ public final class WheelSettingsScreen extends Screen {
 
         @Override
         protected void updateMessage() {
-            setMessage(Text.translatable("screen.better_spellcasting.scale", scale() + "%"));
+            setMessage(Text.translatable("screen.better-spell-casting.scale", scale() + "%"));
         }
 
         @Override

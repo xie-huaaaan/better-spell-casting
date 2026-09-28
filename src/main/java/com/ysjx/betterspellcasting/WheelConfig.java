@@ -12,7 +12,8 @@ import java.nio.file.Path;
 
 public final class WheelConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve("better_spellcasting.json");
+    private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve("better-spell-casting.json");
+    private static final Path LEGACY_BETTER_PATH = FabricLoader.getInstance().getConfigDir().resolve("better_spellcasting.json");
     private static final Path LEGACY_PATH = FabricLoader.getInstance().getConfigDir().resolve("spell_cycle.json");
     private static final Path LEGACY_DLC_PATH = FabricLoader.getInstance().getConfigDir().resolve("spell_cycle_wheel.json");
 
@@ -36,7 +37,8 @@ public final class WheelConfig {
                     return value.normalized();
                 }
             }
-            Path legacyPath = Files.exists(LEGACY_DLC_PATH) ? LEGACY_DLC_PATH : LEGACY_PATH;
+            Path legacyPath = Files.exists(LEGACY_BETTER_PATH) ? LEGACY_BETTER_PATH
+                    : Files.exists(LEGACY_DLC_PATH) ? LEGACY_DLC_PATH : LEGACY_PATH;
             if (Files.exists(legacyPath)) {
                 WheelConfig migrated = migrateLegacy(Files.readString(legacyPath, StandardCharsets.UTF_8));
                 migrated.save();

@@ -20,7 +20,7 @@ import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.gui.SpellTooltip;
 import net.spell_engine.client.input.SpellHotbar;
 import net.spell_engine.client.util.SpellRender;
-import net.spell_engine.internals.casting.SpellCasterClient;
+import net.spell_engine.internals.casting.SpellCaster;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -123,18 +123,18 @@ public final class WheelRenderer {
                                  float x, float y, float tickDelta, boolean showKey) {
         int ix = Math.round(x);
         int iy = Math.round(y);
-        Identifier icon = SpellRender.iconTexture(slot.spell().id());
+        Identifier icon = SpellRender.iconTexture(WheelController.spellId(slot));
         context.setShaderColor(1, 1, 1, 1);
         context.drawTexture(icon, ix, iy, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
         if (client.player != null) {
-            float cooldown = ((SpellCasterClient) client.player).getCooldownManager()
-                    .getCooldownProgress(slot.spell().id(), tickDelta);
+            float cooldown = ((SpellCaster.Client) client.player).getCooldownManager()
+                    .getCooldownProgress(slot.spell(), tickDelta);
             if (cooldown > 0) {
                 int top = iy + MathHelper.floor(16.0F * (1.0F - cooldown));
                 context.fill(RenderLayer.getGuiOverlay(), ix, top, ix + 16, iy + 16, 0x99000000);
             }
         }
-        if (slot.spell().id().equals(WheelController.hudSelectedSpell())) {
+        if (WheelController.spellId(slot).equals(WheelController.hudSelectedSpell())) {
             context.fill(RenderLayer.getGuiOverlay(), ix - 2, iy - 2, ix + 18, iy, 0xFFFFFFFF);
             context.fill(RenderLayer.getGuiOverlay(), ix - 2, iy + 16, ix + 18, iy + 18, 0xFFFFFFFF);
             context.fill(RenderLayer.getGuiOverlay(), ix - 2, iy, ix, iy + 16, 0xFFFFFFFF);
@@ -153,7 +153,7 @@ public final class WheelRenderer {
     private static int slotIndex(SpellHotbar.Slot target) {
         List<SpellHotbar.Slot> slots = WheelController.castSlots();
         for (int i = 0; i < slots.size(); i++) {
-            if (slots.get(i).spell().id().equals(target.spell().id())) return i;
+            if (WheelController.spellId(slots.get(i)).equals(WheelController.spellId(target))) return i;
         }
         return Integer.MAX_VALUE;
     }
@@ -181,14 +181,14 @@ public final class WheelRenderer {
             double angle = -Math.PI / 2 + Math.PI * 2 * i / slots.size();
             int x = centerX + (int) Math.round(Math.cos(angle) * iconRadius) - 8;
             int y = centerY + (int) Math.round(Math.sin(angle) * iconRadius) - 8;
-            context.drawTexture(SpellRender.iconTexture(slots.get(i).spell().id()), x, y,
+            context.drawTexture(SpellRender.iconTexture(WheelController.spellId(slots.get(i))), x, y,
                     0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
             if (i == selected) {
                 drawSelectedIconFrame(context, x, y);
             }
         }
         if (selected >= 0 && selected < slots.size()) {
-            renderDetails(context, client, slots.get(selected).spell().id(), centerX + iconRadius + 30, centerY - 90, width, height);
+            renderDetails(context, client, WheelController.spellId(slots.get(selected)), centerX + iconRadius + 30, centerY - 90, width, height);
         }
     }
 
@@ -278,7 +278,7 @@ public final class WheelRenderer {
     private static void renderDetails(DrawContext context, MinecraftClient client, Identifier spellId,
                                       int x, int y, int screenWidth, int screenHeight) {
         if (client.player == null) return;
-        List<Text> source = SpellTooltip.spellInfo(spellId, client.player, ItemStack.EMPTY, true);
+        List<Text> source = SpellTooltip.spellDescriptionWithDetails(spellId, client.player, ItemStack.EMPTY, 0);
         List<Text> lines = source;
         int panelWidth = Math.min(250, screenWidth - x - 10);
         if (panelWidth < 150) {

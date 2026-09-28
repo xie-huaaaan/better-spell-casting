@@ -11,6 +11,6 @@ public enum HudStyle {
     }
 
     public String translationKey() {
-        return "option.better_spellcasting.hud." + name().toLowerCase(Locale.ROOT);
+        return "option.better-spell-casting.hud." + name().toLowerCase(Locale.ROOT);
     }
 }

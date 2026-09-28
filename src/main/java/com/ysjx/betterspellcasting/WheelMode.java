@@ -13,7 +13,7 @@ public enum WheelMode {
     }
 
     public String translationKey() {
-        return "option.better_spellcasting." + name().toLowerCase(Locale.ROOT);
+        return "option.better-spell-casting." + name().toLowerCase(Locale.ROOT);
     }
 
     public String descriptionKey() {

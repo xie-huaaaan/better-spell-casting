@@ -8,4 +8,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'better-spellcasting'
+rootProject.name = 'better-spell-casting'
