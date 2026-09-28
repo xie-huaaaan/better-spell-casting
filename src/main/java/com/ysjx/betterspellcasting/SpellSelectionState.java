@@ -14,7 +14,10 @@ public final class SpellSelectionState {
 
     public static void syncCandidates(List<Identifier> values) {
         candidates = List.copyOf(values);
-        if (!candidates.contains(selected)) selected = candidates.isEmpty() ? null : candidates.get(0);
+        // Java 25's immutable List implementation rejects null during contains/indexOf.
+        if (selected == null || !candidates.contains(selected)) {
+            selected = candidates.isEmpty() ? null : candidates.get(0);
+        }
     }
 
     public static boolean select(Identifier id) {
