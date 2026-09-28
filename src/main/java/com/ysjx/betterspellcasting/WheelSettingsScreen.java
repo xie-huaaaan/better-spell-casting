@@ -67,11 +67,8 @@ public final class WheelSettingsScreen extends Screen {
         y += 28;
         scaleSlider = addDrawableChild(new ScaleSlider(contentX, y, contentWidth, 20, draft.hudScale));
 
-        int actionWidth = (contentWidth - 8) / 2;
-        addDrawableChild(ButtonWidget.builder(Text.translatable("screen.better-spell-casting.save"), button -> saveAndClose())
-                .dimensions(contentX, height - 28, actionWidth, 20).build());
-        addDrawableChild(ButtonWidget.builder(Text.translatable("gui.cancel"), button -> close())
-                .dimensions(contentX + contentWidth - actionWidth, height - 28, actionWidth, 20).build());
+        addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), button -> saveAndClose())
+                .dimensions(contentX, height - 28, contentWidth, 20).build());
         updateLabels();
     }
 
@@ -109,14 +106,14 @@ public final class WheelSettingsScreen extends Screen {
     }
 
     private void saveAndClose() {
-        draft.hudScale = scaleSlider.scale();
+        if (scaleSlider != null) draft.hudScale = scaleSlider.scale();
         BetterSpellcastingClient.applyConfig(draft);
-        close();
+        if (client != null) client.setScreen(parent);
     }
 
     @Override
     public void close() {
-        if (client != null) client.setScreen(parent);
+        saveAndClose();
     }
 
     @Override

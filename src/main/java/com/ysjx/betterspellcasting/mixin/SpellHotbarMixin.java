@@ -22,7 +22,7 @@ public abstract class SpellHotbarMixin {
         WheelController.routeHotbar(net.minecraft.client.MinecraftClient.getInstance());
     }
 
-    @Inject(method = "handleAll", at = @At("HEAD"), remap = false)
+    @Inject(method = "handleAll", at = @At("HEAD"), remap = false, cancellable = true)
     private void betterSpellcasting$beginAll(ClientPlayerEntity player, GameOptions options,
                                               List<KeyBinding> pressed, CallbackInfoReturnable<SpellHotbar.Handle> cir) {
         WheelController.beginHandle(SpellHotbar.INSTANCE.slots);
@@ -36,7 +36,7 @@ public abstract class SpellHotbarMixin {
         WheelController.endHandle();
     }
 
-    @Inject(method = "handleUseKey", at = @At("HEAD"), remap = false)
+    @Inject(method = "handleUseKey", at = @At("HEAD"), remap = false, cancellable = true)
     private void betterSpellcasting$beginUseKey(ClientPlayerEntity player, GameOptions options,
                                                  CallbackInfoReturnable<SpellHotbar.Handle> cir) {
         SpellHotbar.Slot selected = SpellHotbar.INSTANCE.structuredSlots.onUseKey();
@@ -51,7 +51,7 @@ public abstract class SpellHotbarMixin {
         WheelController.endHandle();
     }
 
-    @Inject(method = "handleOther", at = @At("HEAD"), remap = false)
+    @Inject(method = "handleOther", at = @At("HEAD"), remap = false, cancellable = true)
     private void betterSpellcasting$beginOther(ClientPlayerEntity player, GameOptions options,
                                                 List<KeyBinding> pressed, CallbackInfoReturnable<SpellHotbar.Handle> cir) {
         WheelController.beginHandle(SpellHotbar.INSTANCE.structuredSlots.other());
@@ -65,7 +65,7 @@ public abstract class SpellHotbarMixin {
         WheelController.endHandle();
     }
 
-    @Inject(method = "handleSome", at = @At("HEAD"), remap = false)
+    @Inject(method = "handleSome", at = @At("HEAD"), remap = false, cancellable = true)
     private void betterSpellcasting$beginSome(ClientPlayerEntity player, SpellHotbar.Slot slot,
                                                GameOptions options, List<KeyBinding> pressed,
                                                CallbackInfoReturnable<SpellHotbar.Handle> cir) {
