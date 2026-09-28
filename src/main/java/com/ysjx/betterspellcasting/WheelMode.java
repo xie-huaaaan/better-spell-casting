@@ -1,4 +1,4 @@
-package com.ysjx.spellcyclewheel;
+package com.ysjx.betterspellcasting;
 
 import java.util.Locale;
 
@@ -13,7 +13,7 @@ public enum WheelMode {
     }
 
     public String translationKey() {
-        return "option.spell_cycle_wheel." + name().toLowerCase(Locale.ROOT);
+        return "option.better_spellcasting." + name().toLowerCase(Locale.ROOT);
     }
 
     public String descriptionKey() {

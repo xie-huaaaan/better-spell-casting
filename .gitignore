@@ -4,4 +4,6 @@ out/
 *.iml
 .idea/
 .vscode/
+mc-version/
+.deps/
 

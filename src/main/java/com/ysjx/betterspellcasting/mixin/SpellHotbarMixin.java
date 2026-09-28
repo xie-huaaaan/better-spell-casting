@@ -1,7 +1,7 @@
-package com.ysjx.spellcyclewheel.mixin;
+package com.ysjx.betterspellcasting.mixin;
 
-import com.ysjx.spellcyclewheel.WheelController;
-import com.ysjx.spellcyclewheel.SpellInputTrace;
+import com.ysjx.betterspellcasting.WheelController;
+import com.ysjx.betterspellcasting.SpellInputTrace;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
 import net.spell_engine.client.input.SpellHotbar;
@@ -21,7 +21,7 @@ public abstract class SpellHotbarMixin {
     private void spellCycleWheel$bypassBowUse(ClientPlayerEntity player, SpellHotbar.Slot slot,
                                                GameOptions options,
                                                CallbackInfoReturnable<SpellHotbar.Handle> cir) {
-        if (com.ysjx.spellcyclewheel.BowInputController.bypassSpellInput()) {
+        if (com.ysjx.betterspellcasting.BowInputController.bypassSpellInput()) {
             cir.setReturnValue(null);
         }
     }
@@ -34,7 +34,7 @@ public abstract class SpellHotbarMixin {
     @ModifyVariable(method = "handle(Lnet/minecraft/client/network/ClientPlayerEntity;Lnet/spell_engine/client/input/SpellHotbar$Slot;Lnet/minecraft/client/option/GameOptions;)Lnet/spell_engine/client/input/SpellHotbar$Handle;",
             at = @At("HEAD"), argsOnly = true, ordinal = 0)
     private SpellHotbar.Slot spellCycleWheel$routeFocusedSlot(SpellHotbar.Slot requested) {
-        if (!com.ysjx.spellcyclewheel.SpellCycleWheelClient.isWheelMode()) return requested;
+        if (com.ysjx.betterspellcasting.BetterSpellcastingClient.config().mode == com.ysjx.betterspellcasting.WheelMode.ORIGINAL) return requested;
         SpellHotbar.Slot canonical = SpellHotbar.INSTANCE.structuredSlots.onUseKey();
         SpellInputTrace.rightClickSlot(requested, canonical);
         return canonical == null ? requested : canonical;

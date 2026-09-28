@@ -1,7 +1,7 @@
-package com.ysjx.spellcyclewheel.mixin;
+package com.ysjx.betterspellcasting.mixin;
 
-import com.ysjx.spellcyclewheel.SpellCycleWheelClient;
-import com.ysjx.spellcyclewheel.BowInputController;
+import com.ysjx.betterspellcasting.BetterSpellcastingClient;
+import com.ysjx.betterspellcasting.BowInputController;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import org.spongepowered.asm.mixin.Mixin;
@@ -49,7 +49,7 @@ public abstract class MinecraftClientMixin {
     @Inject(method = "doItemUse", at = @At("HEAD"), cancellable = true)
     private void spellCycleWheel$blockUseWhileOpen(CallbackInfo ci) {
         MinecraftClient client = (MinecraftClient) (Object) this;
-        if (SpellCycleWheelClient.shouldBlockUse(client)) {
+        if (BetterSpellcastingClient.shouldBlockUse(client)) {
             ci.cancel();
         }
     }

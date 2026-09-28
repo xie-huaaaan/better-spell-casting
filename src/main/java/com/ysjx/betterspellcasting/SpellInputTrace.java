@@ -1,4 +1,4 @@
-package com.ysjx.spellcyclewheel;
+package com.ysjx.betterspellcasting;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.GameOptions;
@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /** Low-volume runtime trace for diagnosing the right-click routing path. */
 public final class SpellInputTrace {
-    private static final Logger LOGGER = LoggerFactory.getLogger("SpellCycleWheel/InputTrace");
+    private static final Logger LOGGER = LoggerFactory.getLogger("BetterSpellcasting/InputTrace");
     private static final AtomicLong SEQUENCE = new AtomicLong();
     private static String lastRouteState = "";
     private static String lastOwnerPollState = "";
@@ -39,9 +39,9 @@ public final class SpellInputTrace {
         activeCallUsesSlot = true;
         MinecraftClient client = MinecraftClient.getInstance();
         LOGGER.info("[SCW#{}] useKey slot request={} canonical={} selected={} sameObject={} usePressed={} shortcutEnabled={}",
-                activeCall, id(requested), id(canonical), SpellCycleWheelClient.selectedSpell(),
+                activeCall, id(requested), id(canonical), BetterSpellcastingClient.selectedSpell(),
                 requested == canonical, client.options.useKey.isPressed(),
-                SpellCycleWheelClient.isShortcutCastingEnabled());
+                BetterSpellcastingClient.isShortcutCastingEnabled());
     }
 
     public static void rightClickList(List<SpellHotbar.Slot> requested, SpellHotbar.Slot canonical) {
@@ -49,7 +49,7 @@ public final class SpellInputTrace {
         activeCallUsesSlot = false;
         LOGGER.info("[SCW#{}] full-list use route listIsHotbar={} size={} focused={} canonical={} usePressed={}",
                 activeCall, requested == SpellHotbar.INSTANCE.slots, requested.size(),
-                SpellCycleWheelClient.selectedSpell(), id(canonical),
+                BetterSpellcastingClient.selectedSpell(), id(canonical),
                 MinecraftClient.getInstance().options.useKey.isPressed());
     }
 

@@ -1,4 +1,4 @@
-package com.ysjx.spellcyclewheel;
+package com.ysjx.betterspellcasting;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -18,8 +18,8 @@ public final class BowInputController {
     }
 
     public static boolean enabled(MinecraftClient client) {
-        return SpellCycleWheelClient.isWheelMode()
-                && SpellCycleWheelClient.config().bowLeftClick
+        return BetterSpellcastingClient.isWheelMode()
+                && BetterSpellcastingClient.config().bowLeftClick
                 && client != null
                 && client.currentScreen == null
                 && client.world != null

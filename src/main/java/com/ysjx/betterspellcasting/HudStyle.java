@@ -1,4 +1,4 @@
-package com.ysjx.spellcyclewheel;
+package com.ysjx.betterspellcasting;
 
 import java.util.Locale;
 
@@ -11,6 +11,6 @@ public enum HudStyle {
     }
 
     public String translationKey() {
-        return "option.spell_cycle_wheel.hud." + name().toLowerCase(Locale.ROOT);
+        return "option.better_spellcasting.hud." + name().toLowerCase(Locale.ROOT);
     }
 }

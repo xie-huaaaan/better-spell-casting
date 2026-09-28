@@ -1,4 +1,4 @@
-package com.ysjx.spellcyclewheel;
+package com.ysjx.betterspellcasting;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
@@ -21,7 +21,6 @@ import net.spell_engine.client.gui.SpellTooltip;
 import net.spell_engine.client.input.SpellHotbar;
 import net.spell_engine.client.util.SpellRender;
 import net.spell_engine.internals.casting.SpellCasterClient;
-import com.yuansujuexing.spellcycle.SpellCycleHud;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,14 +44,14 @@ public final class WheelRenderer {
         if (!slots.isEmpty()) {
             renderHud(context, client, slots, tickDelta);
         }
-        if (SpellCycleWheelClient.isWheelOpen()) {
+        if (BetterSpellcastingClient.isWheelOpen()) {
             renderWheel(context, client, slots);
         }
     }
 
     private static void renderHud(DrawContext context, MinecraftClient client,
                                   List<SpellHotbar.Slot> slots, float tickDelta) {
-        WheelConfig config = SpellCycleWheelClient.config();
+        WheelConfig config = BetterSpellcastingClient.config();
         var hotbar = SpellEngineClient.hudConfig.value.hotbar;
         int width = client.getWindow().getScaledWidth();
         int height = client.getWindow().getScaledHeight();
@@ -102,7 +101,7 @@ public final class WheelRenderer {
     }
 
     private static boolean showShortcutLabels() {
-        WheelConfig config = SpellCycleWheelClient.config();
+        WheelConfig config = BetterSpellcastingClient.config();
         return config.mode == WheelMode.ORIGINAL || config.shortcutCasting;
     }
 
@@ -114,8 +113,8 @@ public final class WheelRenderer {
         int ix = Math.round(x);
         int iy = Math.round(y);
         for (int i = 0; i < count; i++) {
-            context.drawTexture(SpellCycleHud.SLOT_TEXTURE, ix + i * SLOT_WIDTH, iy,
-                    0, 0, SLOT_HEIGHT, SLOT_HEIGHT, SLOT_HEIGHT, SLOT_HEIGHT);
+            context.fill(RenderLayer.getGuiOverlay(), ix + i * SLOT_WIDTH, iy,
+                    ix + i * SLOT_WIDTH + SLOT_WIDTH, iy + SLOT_HEIGHT, 0xAA161616);
         }
         RenderSystem.disableBlend();
     }

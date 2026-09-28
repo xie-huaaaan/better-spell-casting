@@ -1,4 +1,4 @@
-package com.ysjx.spellcyclewheel;
+package com.ysjx.betterspellcasting;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -20,9 +20,9 @@ public final class WheelSettingsScreen extends Screen {
     private int descriptionY;
 
     public WheelSettingsScreen(Screen parent) {
-        super(Text.translatable("screen.spell_cycle.title"));
+        super(Text.translatable("screen.better_spellcasting.title"));
         this.parent = parent;
-        this.draft = SpellCycleWheelClient.config().copy();
+        this.draft = BetterSpellcastingClient.config().copy();
     }
 
     @Override
@@ -68,7 +68,7 @@ public final class WheelSettingsScreen extends Screen {
         scaleSlider = addDrawableChild(new ScaleSlider(contentX, y, contentWidth, 20, draft.hudScale));
 
         int actionWidth = (contentWidth - 8) / 2;
-        addDrawableChild(ButtonWidget.builder(Text.translatable("screen.spell_cycle_wheel.save"), button -> saveAndClose())
+        addDrawableChild(ButtonWidget.builder(Text.translatable("screen.better_spellcasting.save"), button -> saveAndClose())
                 .dimensions(contentX, height - 28, actionWidth, 20).build());
         addDrawableChild(ButtonWidget.builder(Text.translatable("gui.cancel"), button -> close())
                 .dimensions(contentX + contentWidth - actionWidth, height - 28, actionWidth, 20).build());
@@ -84,7 +84,7 @@ public final class WheelSettingsScreen extends Screen {
     }
 
     private Text modeText() {
-        return Text.translatable("screen.spell_cycle_wheel.mode", Text.translatable(draft.mode.translationKey()));
+        return Text.translatable("screen.better_spellcasting.mode", Text.translatable(draft.mode.translationKey()));
     }
 
     private Text modeDescription() {
@@ -92,25 +92,25 @@ public final class WheelSettingsScreen extends Screen {
     }
 
     private Text shortcutText() {
-        return Text.translatable("screen.spell_cycle_wheel.shortcut", Text.translatable(draft.shortcutCasting ? "options.on" : "options.off"));
+        return Text.translatable("screen.better_spellcasting.shortcut", Text.translatable(draft.shortcutCasting ? "options.on" : "options.off"));
     }
 
     private Text reverseText() {
-        return Text.translatable("screen.spell_cycle_wheel.reverse_scroll", Text.translatable(draft.reverseScroll ? "options.on" : "options.off"));
+        return Text.translatable("screen.better_spellcasting.reverse_scroll", Text.translatable(draft.reverseScroll ? "options.on" : "options.off"));
     }
 
     private Text bowLeftClickText() {
-        return Text.translatable("screen.spell_cycle_wheel.bow_left_click",
+        return Text.translatable("screen.better_spellcasting.bow_left_click",
                 Text.translatable(draft.bowLeftClick ? "options.on" : "options.off"));
     }
 
     private Text hudText() {
-        return Text.translatable("screen.spell_cycle_wheel.hud", Text.translatable(draft.hudStyle.translationKey()));
+        return Text.translatable("screen.better_spellcasting.hud", Text.translatable(draft.hudStyle.translationKey()));
     }
 
     private void saveAndClose() {
         draft.hudScale = scaleSlider.scale();
-        SpellCycleWheelClient.applyConfig(draft);
+        BetterSpellcastingClient.applyConfig(draft);
         close();
     }
 
@@ -143,7 +143,7 @@ public final class WheelSettingsScreen extends Screen {
 
         @Override
         protected void updateMessage() {
-            setMessage(Text.translatable("screen.spell_cycle_wheel.scale", scale() + "%"));
+            setMessage(Text.translatable("screen.better_spellcasting.scale", scale() + "%"));
         }
 
         @Override

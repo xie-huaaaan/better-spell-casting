@@ -1,15 +1,14 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "com.ysjx.spellcyclewheel.mixin",
+  "package": "com.ysjx.betterspellcasting.mixin",
   "compatibilityLevel": "JAVA_17",
   "client": [
     "KeyboardMixin",
     "MouseMixin",
     "MinecraftClientMixin",
     "SpellHotbarMixin",
-    "SpellHotbarWidgetMixin",
-    "SpellCycleHudMixin"
+    "SpellHotbarWidgetMixin"
   ],
   "injectors": {
     "defaultRequire": 1
