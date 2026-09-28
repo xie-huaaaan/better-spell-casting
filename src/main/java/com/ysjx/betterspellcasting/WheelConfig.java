@@ -103,7 +103,7 @@ public final class WheelConfig {
     public void save() {
         try {
             Files.createDirectories(PATH.getParent());
-        Files.writeString(PATH, GSON.toJson(normalized()) + System.lineSeparator(), StandardCharsets.UTF_8);
+            Files.writeString(PATH, GSON.toJson(normalized()) + System.lineSeparator(), StandardCharsets.UTF_8);
         } catch (IOException ignored) {
             // The next launch will retry using the in-memory defaults.
         }
