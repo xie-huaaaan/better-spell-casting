@@ -20,12 +20,36 @@ dependencies {
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    def spellEngineJar = file("D:/HMCL/.minecraft/versions/元素觉醒1.4.6/mods/spell_engine-0.15.12+1.20.1.jar")
+    def spellEnginePath = providers.gradleProperty('spell_engine_jar').orNull
+            ?: System.getenv('SPELL_ENGINE_JAR')
+            ?: 'D:/HMCL/.minecraft/versions/元素觉醒1.4.6/mods/spell_engine-0.15.12+1.20.1.jar'
+    def spellEngineJar = file(spellEnginePath)
+    if (!spellEngineJar.isFile()) {
+        throw new GradleException("Spell Engine JAR not found. Set -Pspell_engine_jar=<path> or SPELL_ENGINE_JAR.")
+    }
     modImplementation files(spellEngineJar)
-    // Spell Engine embeds TinyConfig instead of exposing it as a normal Gradle dependency.
-    // Connector's extracted copy supplies the classes needed by the client HUD API at compile time.
-    compileOnly files('D:/HMCL/.minecraft/versions/元素觉醒1.4.6/mods/.connector/temp/spell_engine-0.15.12+1.20.1$TinyConfig-2.3.2.jar')
+    def tinyConfigJar = layout.buildDirectory.file('generated/dependencies/tiny-config.jar').get().asFile
+    compileOnly files(tinyConfigJar)
+    tasks.register('extractTinyConfig') {
+        inputs.file(spellEngineJar)
+        outputs.file(tinyConfigJar)
+        doLast {
+            tinyConfigJar.parentFile.mkdirs()
+            def entryName = 'META-INF/jars/TinyConfig-2.3.2.jar'
+            new java.util.zip.ZipFile(spellEngineJar).withCloseable { zip ->
+                def entry = zip.getEntry(entryName)
+                if (entry == null) throw new GradleException("TinyConfig was not found in $spellEngineJar")
+                zip.getInputStream(entry).withCloseable { input ->
+                    tinyConfigJar.withOutputStream { output -> input.transferTo(output) }
+                }
+            }
+        }
+    }
+    tasks.named('compileJava') { dependsOn('extractTinyConfig') }
 }
+
+tasks.named('remapSourcesJar') { dependsOn('extractTinyConfig') }
+tasks.named('remapJar') { dependsOn('extractTinyConfig') }
 
 processResources {
     inputs.property 'version', project.version

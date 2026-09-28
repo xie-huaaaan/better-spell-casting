@@ -14,7 +14,9 @@ Use Java 17 for Minecraft 1.20.1:
 
 ```powershell
 $env:JAVA_HOME = 'C:\Program Files\Zulu\zulu-17'
-.\gradlew.bat build
+.\gradlew.bat build -Pspell_engine_jar='D:\path\to\spell_engine-0.15.12+1.20.1.jar'
 ```
+
+The local Element Awakening installation is used automatically when that default path exists. A public checkout should pass the Spell Engine JAR path explicitly; TinyConfig is extracted from that JAR during compilation.
 
 The remapped distributable is written to `build/libs/better-spellcasting-1.0.1.jar`.
