@@ -1,7 +1,7 @@
-package com.ysjx.betterspellcasting.mixin;
+package com.betterspellcasting.mixin;
 
-import com.ysjx.betterspellcasting.BetterSpellcastingClient;
-import com.ysjx.betterspellcasting.BowInputController;
+import com.betterspellcasting.BetterSpellcastingClient;
+import com.betterspellcasting.BowInputController;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import org.spongepowered.asm.mixin.Mixin;

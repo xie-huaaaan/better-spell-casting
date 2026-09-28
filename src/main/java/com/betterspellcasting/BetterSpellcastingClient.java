@@ -1,4 +1,4 @@
-package com.ysjx.betterspellcasting;
+package com.betterspellcasting;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -22,7 +22,7 @@ import org.lwjgl.glfw.GLFW;
 /** Owns Better Spellcasting's client lifecycle, input bindings, and mode state. */
 public final class BetterSpellcastingClient implements ClientModInitializer {
     public static final String MOD_ID = "better-spell-casting";
-    private static WheelConfig config;
+    private static SpellcastingConfig config;
     private static KeyBinding selectKey;
     private static KeyBinding castSelectedKey;
     private static boolean selectionHeld;
@@ -30,7 +30,7 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        config = WheelConfig.load();
+        config = SpellcastingConfig.load();
         selectKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.better-spell-casting.select_spell", InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_X, "key.categories.better-spell-casting"));
@@ -38,15 +38,15 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
                 "key.better-spell-casting.cast_selected", InputUtil.Type.MOUSE,
                 GLFW.GLFW_MOUSE_BUTTON_RIGHT, "key.categories.better-spell-casting"));
         ClientTickEvents.END_CLIENT_TICK.register(BetterSpellcastingClient::tick);
-        HudRenderCallback.EVENT.register(WheelRenderer::render);
+        HudRenderCallback.EVENT.register(SpellcastingRenderer::render);
         ScreenEvents.AFTER_INIT.register(BetterSpellcastingClient::addSettingsEntry);
     }
 
-    public static WheelConfig config() { return config == null ? new WheelConfig() : config; }
-    public static boolean isWheelMode() { return config().mode == WheelMode.WHEEL; }
-    public static boolean isCycleMode() { return config().mode == WheelMode.CYCLE; }
+    public static SpellcastingConfig config() { return config == null ? new SpellcastingConfig() : config; }
+    public static boolean isWheelMode() { return config().mode == CastingMode.WHEEL; }
+    public static boolean isCycleMode() { return config().mode == CastingMode.CYCLE; }
     public static boolean isShortcutCastingEnabled() {
-        return config().mode == WheelMode.ORIGINAL || config().shortcutCasting;
+        return config().mode == CastingMode.ORIGINAL || config().shortcutCasting;
     }
     public static boolean isWheelOpen() { return selectionHeld && isWheelMode(); }
     public static boolean isSelectionHeld() { return selectionHeld; }
@@ -74,14 +74,14 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
     private static void beginSelection(MinecraftClient client) {
         if (selectionHeld) return;
         selectionHeld = true;
-        WheelController.ensureSelection();
+        SpellcastingController.ensureSelection();
         if (isWheelMode()) client.mouse.unlockCursor();
     }
 
     private static void endSelection(MinecraftClient client) {
         if (!selectionHeld) return;
         selectionHeld = false;
-        WheelController.confirmSelection(client);
+        SpellcastingController.confirmSelection(client);
         if (client.player != null) client.mouse.lockCursor();
     }
 
@@ -102,11 +102,12 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
         }
     }
 
-    public static void onScroll(double horizontal, double vertical) {
-        if (!isCycleMode() || !selectionHeld || vertical == 0) return;
+    public static boolean onScroll(double horizontal, double vertical) {
+        if (!isCycleMode() || !selectionHeld || vertical == 0) return false;
         int direction = vertical < 0 ? 1 : -1;
         if (config().reverseScroll) direction = -direction;
-        WheelController.stepSelection(direction);
+        SpellcastingController.stepSelection(direction);
+        return true;
     }
 
     public static boolean shouldBlockUse(MinecraftClient client) {
@@ -121,23 +122,23 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
             selectionKeyDown = false;
             BowInputController.stop(client);
         }
-        WheelController.refresh(client);
-        if (isWheelMode() && selectionHeld) WheelController.updateSelection(client);
-        WheelController.routeHotbar(client);
+        SpellcastingController.refresh(client);
+        if (isWheelMode() && selectionHeld) SpellcastingController.updateSelection(client);
+        SpellcastingController.routeHotbar(client);
     }
 
     public static void setSelectedSpell(Identifier id) {
         if (id != null && SpellSelectionState.select(id)) {
-            WheelController.routeHotbar(MinecraftClient.getInstance());
+            SpellcastingController.routeHotbar(MinecraftClient.getInstance());
         }
     }
 
-    public static void applyConfig(WheelConfig updated) {
+    public static void applyConfig(SpellcastingConfig updated) {
         BowInputController.stop(MinecraftClient.getInstance());
         config = updated.copy().normalized();
         config.save();
         selectionHeld = false;
-        WheelController.refresh(MinecraftClient.getInstance());
+        SpellcastingController.refresh(MinecraftClient.getInstance());
     }
 
     private static void addSettingsEntry(MinecraftClient client, Screen screen, int width, int height) {
@@ -159,7 +160,7 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
         int w = anchor.getWidth();
         while (y > 0 && overlapsVisibleButton(screen, old, x, y, w, 20)) y--;
         Screens.getButtons(screen).add(ButtonWidget.builder(Text.translatable("screen.better-spell-casting.entry"),
-                        ignored -> client.setScreen(new WheelSettingsScreen(screen)))
+                        ignored -> client.setScreen(new SpellcastingSettingsScreen(screen)))
                 .dimensions(x, y, w, 20)
                 .tooltip(net.minecraft.client.gui.tooltip.Tooltip.of(
                         Text.translatable("screen.better-spell-casting.entry.tooltip")))

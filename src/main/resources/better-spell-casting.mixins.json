@@ -1,7 +1,7 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "com.ysjx.betterspellcasting.mixin",
+  "package": "com.betterspellcasting.mixin",
   "compatibilityLevel": "JAVA_17",
   "client": [
     "KeyboardMixin",

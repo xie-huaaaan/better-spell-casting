@@ -1,4 +1,4 @@
-package com.ysjx.betterspellcasting;
+package com.betterspellcasting;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
@@ -26,12 +26,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Client HUD and radial selector renderer. */
-public final class WheelRenderer {
+public final class SpellcastingRenderer {
     private static final int SLOT_WIDTH = 20;
     private static final int SLOT_HEIGHT = 22;
     private static final int ICON_SIZE = 16;
 
-    private WheelRenderer() {
+    private SpellcastingRenderer() {
     }
 
     public static void render(DrawContext context, float tickDelta) {
@@ -40,7 +40,7 @@ public final class WheelRenderer {
             return;
         }
 
-        List<SpellHotbar.Slot> slots = WheelController.castSlots();
+        List<SpellHotbar.Slot> slots = SpellcastingController.castSlots();
         if (!slots.isEmpty()) {
             renderHud(context, client, slots, tickDelta);
         }
@@ -51,7 +51,7 @@ public final class WheelRenderer {
 
     private static void renderHud(DrawContext context, MinecraftClient client,
                                   List<SpellHotbar.Slot> slots, float tickDelta) {
-        WheelConfig config = BetterSpellcastingClient.config();
+        SpellcastingConfig config = BetterSpellcastingClient.config();
         var hotbar = SpellEngineClient.hudConfig.value.hotbar;
         int width = client.getWindow().getScaledWidth();
         int height = client.getWindow().getScaledHeight();
@@ -101,8 +101,8 @@ public final class WheelRenderer {
     }
 
     private static boolean showShortcutLabels() {
-        WheelConfig config = BetterSpellcastingClient.config();
-        return config.mode == WheelMode.ORIGINAL || config.shortcutCasting;
+        SpellcastingConfig config = BetterSpellcastingClient.config();
+        return config.mode == CastingMode.ORIGINAL || config.shortcutCasting;
     }
 
     private static void drawHotbarBackground(DrawContext context, float x, float y, int count) {
@@ -123,7 +123,7 @@ public final class WheelRenderer {
                                  float x, float y, float tickDelta, boolean showKey) {
         int ix = Math.round(x);
         int iy = Math.round(y);
-        Identifier icon = SpellRender.iconTexture(WheelController.spellId(slot));
+        Identifier icon = SpellRender.iconTexture(SpellcastingController.spellId(slot));
         context.setShaderColor(1, 1, 1, 1);
         context.drawTexture(icon, ix, iy, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
         if (client.player != null) {
@@ -134,7 +134,7 @@ public final class WheelRenderer {
                 context.fill(RenderLayer.getGuiOverlay(), ix, top, ix + 16, iy + 16, 0x99000000);
             }
         }
-        if (WheelController.spellId(slot).equals(WheelController.hudSelectedSpell())) {
+        if (SpellcastingController.spellId(slot).equals(SpellcastingController.hudSelectedSpell())) {
             context.fill(RenderLayer.getGuiOverlay(), ix - 2, iy - 2, ix + 18, iy, 0xFFFFFFFF);
             context.fill(RenderLayer.getGuiOverlay(), ix - 2, iy + 16, ix + 18, iy + 18, 0xFFFFFFFF);
             context.fill(RenderLayer.getGuiOverlay(), ix - 2, iy, ix, iy + 16, 0xFFFFFFFF);
@@ -151,16 +151,16 @@ public final class WheelRenderer {
     }
 
     private static int slotIndex(SpellHotbar.Slot target) {
-        List<SpellHotbar.Slot> slots = WheelController.castSlots();
+        List<SpellHotbar.Slot> slots = SpellcastingController.castSlots();
         for (int i = 0; i < slots.size(); i++) {
-            if (WheelController.spellId(slots.get(i)).equals(WheelController.spellId(target))) return i;
+            if (SpellcastingController.spellId(slots.get(i)).equals(SpellcastingController.spellId(target))) return i;
         }
         return Integer.MAX_VALUE;
     }
 
     private static net.minecraft.client.option.KeyBinding shortcutKey(MinecraftClient client, SpellHotbar.Slot target) {
         int index = slotIndex(target);
-        return WheelController.shortcutKey(client, index);
+        return SpellcastingController.shortcutKey(client, index);
     }
 
     private static void renderWheel(DrawContext context, MinecraftClient client,
@@ -173,7 +173,7 @@ public final class WheelRenderer {
         int outerRadius = Math.min(118, Math.max(92, Math.min(width, height) / 5));
         // Keep the 16px icon and its selection frame inside the annular sector.
         int iconRadius = outerRadius - 18;
-        int selected = WheelController.selectedIndex();
+        int selected = SpellcastingController.selectedIndex();
         context.fill(RenderLayer.getGuiOverlay(), 0, 0, width, height, 0x33000000);
         drawRadialSectors(context, centerX, centerY, 38, outerRadius, slots.size(), selected);
         drawCenter(context, centerX, centerY, 38);
@@ -181,14 +181,14 @@ public final class WheelRenderer {
             double angle = -Math.PI / 2 + Math.PI * 2 * i / slots.size();
             int x = centerX + (int) Math.round(Math.cos(angle) * iconRadius) - 8;
             int y = centerY + (int) Math.round(Math.sin(angle) * iconRadius) - 8;
-            context.drawTexture(SpellRender.iconTexture(WheelController.spellId(slots.get(i))), x, y,
+            context.drawTexture(SpellRender.iconTexture(SpellcastingController.spellId(slots.get(i))), x, y,
                     0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
             if (i == selected) {
                 drawSelectedIconFrame(context, x, y);
             }
         }
         if (selected >= 0 && selected < slots.size()) {
-            renderDetails(context, client, WheelController.spellId(slots.get(selected)), centerX + iconRadius + 30, centerY - 90, width, height);
+            renderDetails(context, client, SpellcastingController.spellId(slots.get(selected)), centerX + iconRadius + 30, centerY - 90, width, height);
         }
     }
 

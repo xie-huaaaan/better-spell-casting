@@ -1,7 +1,7 @@
-package com.ysjx.betterspellcasting.mixin;
+package com.betterspellcasting.mixin;
 
-import com.ysjx.betterspellcasting.BowInputController;
-import com.ysjx.betterspellcasting.WheelController;
+import com.betterspellcasting.BowInputController;
+import com.betterspellcasting.SpellcastingController;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
@@ -19,57 +19,57 @@ public abstract class SpellHotbarMixin {
     @Inject(method = "update", at = @At("RETURN"), remap = false)
     private void betterSpellcasting$route(ClientPlayerEntity player, GameOptions options,
                                           CallbackInfoReturnable<Boolean> cir) {
-        WheelController.routeHotbar(net.minecraft.client.MinecraftClient.getInstance());
+        SpellcastingController.routeHotbar(net.minecraft.client.MinecraftClient.getInstance());
     }
 
     @Inject(method = "handleAll", at = @At("HEAD"), remap = false, cancellable = true)
     private void betterSpellcasting$beginAll(ClientPlayerEntity player, GameOptions options,
                                               List<KeyBinding> pressed, CallbackInfoReturnable<SpellHotbar.Handle> cir) {
-        WheelController.beginHandle(SpellHotbar.INSTANCE.slots);
+        SpellcastingController.beginHandle(SpellHotbar.INSTANCE.slots);
         if (BowInputController.bypassSpellInput()) cir.setReturnValue(null);
     }
 
     @Inject(method = "handleAll", at = @At("RETURN"), remap = false)
     private void betterSpellcasting$finishAll(ClientPlayerEntity player, GameOptions options,
                                                List<KeyBinding> pressed, CallbackInfoReturnable<SpellHotbar.Handle> cir) {
-        WheelController.finishHandle(cir.getReturnValue());
-        WheelController.endHandle();
+        SpellcastingController.finishHandle(cir.getReturnValue());
+        SpellcastingController.endHandle();
     }
 
     @Inject(method = "handleUseKey", at = @At("HEAD"), remap = false, cancellable = true)
     private void betterSpellcasting$beginUseKey(ClientPlayerEntity player, GameOptions options,
                                                  CallbackInfoReturnable<SpellHotbar.Handle> cir) {
         SpellHotbar.Slot selected = SpellHotbar.INSTANCE.structuredSlots.onUseKey();
-        WheelController.beginHandle(selected == null ? List.of() : List.of(selected));
+        SpellcastingController.beginHandle(selected == null ? List.of() : List.of(selected));
         if (BowInputController.bypassSpellInput()) cir.setReturnValue(null);
     }
 
     @Inject(method = "handleUseKey", at = @At("RETURN"), remap = false)
     private void betterSpellcasting$finishUseKey(ClientPlayerEntity player, GameOptions options,
                                                   CallbackInfoReturnable<SpellHotbar.Handle> cir) {
-        WheelController.finishHandle(cir.getReturnValue());
-        WheelController.endHandle();
+        SpellcastingController.finishHandle(cir.getReturnValue());
+        SpellcastingController.endHandle();
     }
 
     @Inject(method = "handleOther", at = @At("HEAD"), remap = false, cancellable = true)
     private void betterSpellcasting$beginOther(ClientPlayerEntity player, GameOptions options,
                                                 List<KeyBinding> pressed, CallbackInfoReturnable<SpellHotbar.Handle> cir) {
-        WheelController.beginHandle(SpellHotbar.INSTANCE.structuredSlots.other());
+        SpellcastingController.beginHandle(SpellHotbar.INSTANCE.structuredSlots.other());
         if (BowInputController.bypassSpellInput()) cir.setReturnValue(null);
     }
 
     @Inject(method = "handleOther", at = @At("RETURN"), remap = false)
     private void betterSpellcasting$finishOther(ClientPlayerEntity player, GameOptions options,
                                                  List<KeyBinding> pressed, CallbackInfoReturnable<SpellHotbar.Handle> cir) {
-        WheelController.finishHandle(cir.getReturnValue());
-        WheelController.endHandle();
+        SpellcastingController.finishHandle(cir.getReturnValue());
+        SpellcastingController.endHandle();
     }
 
     @Inject(method = "handleSome", at = @At("HEAD"), remap = false, cancellable = true)
     private void betterSpellcasting$beginSome(ClientPlayerEntity player, SpellHotbar.Slot slot,
                                                GameOptions options, List<KeyBinding> pressed,
                                                CallbackInfoReturnable<SpellHotbar.Handle> cir) {
-        WheelController.beginHandle(slot == null ? List.of() : List.of(slot));
+        SpellcastingController.beginHandle(slot == null ? List.of() : List.of(slot));
         if (BowInputController.bypassSpellInput()) cir.setReturnValue(null);
     }
 
@@ -77,7 +77,7 @@ public abstract class SpellHotbarMixin {
     private void betterSpellcasting$finishSome(ClientPlayerEntity player, SpellHotbar.Slot slot,
                                                 GameOptions options, List<KeyBinding> pressed,
                                                 CallbackInfoReturnable<SpellHotbar.Handle> cir) {
-        WheelController.finishHandle(cir.getReturnValue());
-        WheelController.endHandle();
+        SpellcastingController.finishHandle(cir.getReturnValue());
+        SpellcastingController.endHandle();
     }
 }

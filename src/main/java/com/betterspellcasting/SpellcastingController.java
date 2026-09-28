@@ -1,4 +1,4 @@
-package com.ysjx.betterspellcasting;
+package com.betterspellcasting;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.GameOptions;
@@ -13,7 +13,7 @@ import net.spell_engine.internals.casting.SpellCaster;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class WheelController {
+public final class SpellcastingController {
     private enum InputPass {
         NONE,
         FULL,
@@ -26,7 +26,7 @@ public final class WheelController {
     private static SpellCast.Process inputOwnerProcess;
     private static WrappedKeybinding.Unwrapped inputOwnerBinding;
 
-    private WheelController() {}
+    private SpellcastingController() {}
 
     public static List<SpellHotbar.Slot> castSlots() {
         // Spell Engine has already applied hand, container, mode, and availability rules.
@@ -53,7 +53,7 @@ public final class WheelController {
             SpellSelectionState.syncCandidates(List.of());
             return;
         }
-        SpellSelectionState.syncCandidates(slots.stream().map(WheelController::spellId).toList());
+        SpellSelectionState.syncCandidates(slots.stream().map(SpellcastingController::spellId).toList());
         Identifier current = BetterSpellcastingClient.selectedSpell();
         for (SpellHotbar.Slot slot : slots) {
             if (spellId(slot).equals(current)) return;
@@ -63,7 +63,7 @@ public final class WheelController {
 
     public static void refresh(MinecraftClient client) {
         List<SpellHotbar.Slot> slots = castSlots();
-        SpellSelectionState.syncCandidates(slots.stream().map(WheelController::spellId).toList());
+        SpellSelectionState.syncCandidates(slots.stream().map(SpellcastingController::spellId).toList());
     }
 
     public static void confirmSelection(MinecraftClient client) {
@@ -108,7 +108,7 @@ public final class WheelController {
     }
 
     public static void routeHotbar(MinecraftClient client) {
-        if (BetterSpellcastingClient.config().mode == WheelMode.ORIGINAL) {
+        if (BetterSpellcastingClient.config().mode == CastingMode.ORIGINAL) {
             resetInputOwner();
             return;
         }
@@ -266,7 +266,7 @@ public final class WheelController {
     }
 
     public static void beginHandle(List<SpellHotbar.Slot> slots) {
-        if (BetterSpellcastingClient.config().mode == WheelMode.ORIGINAL) {
+        if (BetterSpellcastingClient.config().mode == CastingMode.ORIGINAL) {
             inputPass = InputPass.NONE;
         } else if (slots == SpellHotbar.INSTANCE.slots) {
             inputPass = InputPass.FULL;

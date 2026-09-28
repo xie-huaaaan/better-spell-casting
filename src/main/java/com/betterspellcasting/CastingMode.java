@@ -1,14 +1,14 @@
-package com.ysjx.betterspellcasting;
+package com.betterspellcasting;
 
 import java.util.Locale;
 
-public enum WheelMode {
+public enum CastingMode {
     ORIGINAL,
     CYCLE,
     WHEEL;
 
-    public WheelMode next() {
-        WheelMode[] values = values();
+    public CastingMode next() {
+        CastingMode[] values = values();
         return values[(ordinal() + 1) % values.length];
     }
 

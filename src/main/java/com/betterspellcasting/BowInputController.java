@@ -1,4 +1,4 @@
-package com.ysjx.betterspellcasting;
+package com.betterspellcasting;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;

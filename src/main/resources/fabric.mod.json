@@ -4,11 +4,11 @@
   "version": "${version}",
   "name": "Better Spellcasting",
   "description": "Client-side enhancements for spell selection, casting controls, and HUDs.",
-  "authors": ["ysjx"],
+  "authors": ["Better Spellcasting contributors"],
   "license": "MIT",
   "environment": "client",
   "entrypoints": {
-    "client": ["com.ysjx.betterspellcasting.BetterSpellcastingClient"]
+    "client": ["com.betterspellcasting.BetterSpellcastingClient"]
   },
   "mixins": ["better-spell-casting.mixins.json"],
   "depends": {

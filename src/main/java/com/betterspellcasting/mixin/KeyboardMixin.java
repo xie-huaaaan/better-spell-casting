@@ -1,6 +1,6 @@
-package com.ysjx.betterspellcasting.mixin;
+package com.betterspellcasting.mixin;
 
-import com.ysjx.betterspellcasting.BetterSpellcastingClient;
+import com.betterspellcasting.BetterSpellcastingClient;
 import net.minecraft.client.Keyboard;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

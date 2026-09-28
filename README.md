@@ -4,7 +4,7 @@ Client-side improvements for the Spell Engine casting workflow. The 1.20.1 Fabri
 
 ## Install
 
-Copy `build/libs/better-spell-casting-1.0.1.jar` into the instance `mods` directory alongside Spell Engine and the loader's client dependencies. This version absorbs the old `spell-cycle` controls, so remove the old `spell-cycle` JAR instead of loading both mods together. The server does not need this mod.
+Copy `build/libs/better-spell-casting-fabric-1.0.1+1.20.1.jar` into the instance `mods` directory alongside Spell Engine and the loader's client dependencies. This version absorbs the old `spell-cycle` controls, so remove the old `spell-cycle` JAR instead of loading both mods together. The server does not need this mod.
 
 Open `ESC -> Options -> Controls -> Spellcasting Settings` and choose `Radial wheel switching` to enable the radial selector. Hold `X`, point at a spell, and release `X` to select it. The `Cast selected spell` binding (right mouse by default) casts the selected spell and is listed under Better Spellcasting in Controls. The same settings page controls shortcut casting, the single-row/three-row spell-bar layout, HUD scale, scroll direction, and optional left-click bow/crossbow controls.
 

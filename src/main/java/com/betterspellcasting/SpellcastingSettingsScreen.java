@@ -1,4 +1,4 @@
-package com.ysjx.betterspellcasting;
+package com.betterspellcasting;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -6,9 +6,9 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.SliderWidget;
 import net.minecraft.text.Text;
 
-public final class WheelSettingsScreen extends Screen {
+public final class SpellcastingSettingsScreen extends Screen {
     private final Screen parent;
-    private final WheelConfig draft;
+    private final SpellcastingConfig draft;
     private ButtonWidget modeButton;
     private ButtonWidget shortcutButton;
     private ButtonWidget reverseButton;
@@ -19,7 +19,7 @@ public final class WheelSettingsScreen extends Screen {
     private int contentWidth;
     private int descriptionY;
 
-    public WheelSettingsScreen(Screen parent) {
+    public SpellcastingSettingsScreen(Screen parent) {
         super(Text.translatable("screen.better-spell-casting.title"));
         this.parent = parent;
         this.draft = BetterSpellcastingClient.config().copy();
@@ -39,21 +39,21 @@ public final class WheelSettingsScreen extends Screen {
         int descriptionHeight = textRenderer.wrapLines(modeDescription(), contentWidth).size() * 10;
         y = descriptionY + descriptionHeight + 8;
 
-        if (draft.mode != WheelMode.ORIGINAL) {
+        if (draft.mode != CastingMode.ORIGINAL) {
             shortcutButton = addDrawableChild(ButtonWidget.builder(shortcutText(), button -> {
                 draft.shortcutCasting = !draft.shortcutCasting;
                 updateLabels();
             }).dimensions(contentX, y, contentWidth, 20).build());
             y += 28;
         }
-        if (draft.mode == WheelMode.CYCLE) {
+        if (draft.mode == CastingMode.CYCLE) {
             reverseButton = addDrawableChild(ButtonWidget.builder(reverseText(), button -> {
                 draft.reverseScroll = !draft.reverseScroll;
                 updateLabels();
             }).dimensions(contentX, y, contentWidth, 20).build());
             y += 28;
         }
-        if (draft.mode == WheelMode.WHEEL || draft.mode == WheelMode.CYCLE) {
+        if (draft.mode == CastingMode.WHEEL || draft.mode == CastingMode.CYCLE) {
             bowLeftClickButton = addDrawableChild(ButtonWidget.builder(bowLeftClickText(), button -> {
                 draft.bowLeftClick = !draft.bowLeftClick;
                 updateLabels();
