@@ -1,0 +1,23 @@
+{
+  "screen.spell_cycle.entry": "法术切换设置",
+  "screen.spell_cycle.entry.tooltip": "配置法术切换与轮盘施法",
+  "key.spell_cycle_wheel.cast_selected": "释放选定法术",
+  "screen.spell_cycle_wheel.title": "法术切换设置",
+  "screen.spell_cycle_wheel.mode": "操作模式：%s",
+  "screen.spell_cycle_wheel.shortcut": "启用快捷键施法：%s",
+  "screen.spell_cycle_wheel.hud": "左下角 HUD：%s",
+  "screen.spell_cycle_wheel.scale": "HUD 大小：%s",
+  "screen.spell_cycle_wheel.save": "保存",
+  "option.spell_cycle_wheel.original": "原版快捷键",
+  "option.spell_cycle_wheel.original.description": "使用数字键或自定义快捷键直接施放法术。",
+  "option.spell_cycle_wheel.cycle": "滚轮切换",
+  "option.spell_cycle_wheel.cycle.description": "按住 X 后滚动鼠标切换法术，松开 X 确认选择。",
+  "option.spell_cycle_wheel.wheel": "轮盘切换",
+  "option.spell_cycle_wheel.wheel.description": "按住 X 打开轮盘，指向法术后松开 X 确认选择。",
+  "option.spell_cycle_wheel.hud.single": "原版单排显示",
+  "option.spell_cycle_wheel.hud.three": "动态三排显示",
+  "screen.spell_cycle_wheel.reverse_scroll": "滚轮方向反转：%s",
+  "screen.spell_cycle_wheel.bow_left_click": "左键弓弩操作：%s",
+  "screen.spell_cycle_wheel.tooltip": "配置客户端轮盘施法逻辑",
+  "hud.spell_cycle_wheel.no_spell": "未选择法术"
+}

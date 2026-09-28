@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "spell_cycle_wheel",
+  "version": "${version}",
+  "name": "Better Spellcasting",
+  "description": "Client-side enhancements for spell selection, casting controls, and HUDs.",
+  "authors": ["ysjx"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.ysjx.spellcyclewheel.SpellCycleWheelClient"]
+  },
+  "mixins": ["spell_cycle_wheel.mixins.json"],
+  "depends": {
+    "minecraft": "1.20.1",
+    "fabricloader": ">=0.15.0",
+    "fabric": "*",
+    "spell_engine": ">=0.15.12",
+    "spell_cycle": ">=1.2.7"
+  }
+}

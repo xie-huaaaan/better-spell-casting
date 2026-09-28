@@ -1,0 +1,23 @@
+{
+  "screen.spell_cycle.entry": "Spell Cycle Settings",
+  "screen.spell_cycle.entry.tooltip": "Configure spell switching and radial casting",
+  "key.spell_cycle_wheel.cast_selected": "Cast selected spell",
+  "screen.spell_cycle_wheel.title": "Spell Wheel Settings",
+  "screen.spell_cycle_wheel.mode": "Operation mode: %s",
+  "screen.spell_cycle_wheel.shortcut": "Shortcut casting: %s",
+  "screen.spell_cycle_wheel.hud": "Spell HUD: %s",
+  "screen.spell_cycle_wheel.scale": "HUD size: %s",
+  "screen.spell_cycle_wheel.save": "Save",
+  "option.spell_cycle_wheel.original": "Vanilla shortcuts",
+  "option.spell_cycle_wheel.original.description": "Cast spells directly with number keys or custom shortcuts.",
+  "option.spell_cycle_wheel.cycle": "Mouse wheel switching",
+  "option.spell_cycle_wheel.cycle.description": "Hold X and scroll to preview spells, then release X to confirm.",
+  "option.spell_cycle_wheel.wheel": "Radial wheel switching",
+  "option.spell_cycle_wheel.wheel.description": "Hold X, point at a spell, and release X to confirm it.",
+  "option.spell_cycle_wheel.hud.single": "Original single row",
+  "option.spell_cycle_wheel.hud.three": "Dynamic three rows",
+  "screen.spell_cycle_wheel.reverse_scroll": "Reverse scroll direction: %s",
+  "screen.spell_cycle_wheel.bow_left_click": "Left-click bow/crossbow controls: %s",
+  "screen.spell_cycle_wheel.tooltip": "Configure the client-side radial spell selector",
+  "hud.spell_cycle_wheel.no_spell": "No spell selected"
+}
