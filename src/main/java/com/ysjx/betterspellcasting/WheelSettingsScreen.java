@@ -53,7 +53,7 @@ public final class WheelSettingsScreen extends Screen {
             }).dimensions(contentX, y, contentWidth, 20).build());
             y += 28;
         }
-        if (draft.mode == WheelMode.WHEEL) {
+        if (draft.mode == WheelMode.WHEEL || draft.mode == WheelMode.CYCLE) {
             bowLeftClickButton = addDrawableChild(ButtonWidget.builder(bowLeftClickText(), button -> {
                 draft.bowLeftClick = !draft.bowLeftClick;
                 updateLabels();

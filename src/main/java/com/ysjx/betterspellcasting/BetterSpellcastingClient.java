@@ -26,6 +26,7 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
     private static KeyBinding selectKey;
     private static KeyBinding castSelectedKey;
     private static boolean selectionHeld;
+    private static boolean selectionKeyDown;
 
     @Override
     public void onInitializeClient() {
@@ -55,15 +56,49 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
     public static void onKey(long window, int key, int scanCode, int action) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (selectKey == null || window != client.getWindow().getHandle()
-                || !selectKey.matchesKey(key, scanCode) || client.currentScreen != null) return;
-        if (action == GLFW.GLFW_PRESS) {
-            selectionHeld = true;
-            WheelController.ensureSelection();
-            if (isWheelMode()) client.mouse.unlockCursor();
-        } else if (action == GLFW.GLFW_RELEASE) {
+                || !selectKey.matchesKey(key, scanCode)) return;
+        if (client.currentScreen != null) {
+            selectionKeyDown = false;
             selectionHeld = false;
-            WheelController.confirmSelection(client);
-            if (client.player != null) client.mouse.lockCursor();
+            return;
+        }
+        if (action == GLFW.GLFW_PRESS) {
+            selectionKeyDown = true;
+            beginSelection(client);
+        } else if (action == GLFW.GLFW_RELEASE) {
+            selectionKeyDown = false;
+            endSelection(client);
+        }
+    }
+
+    private static void beginSelection(MinecraftClient client) {
+        if (selectionHeld) return;
+        selectionHeld = true;
+        WheelController.ensureSelection();
+        if (isWheelMode()) client.mouse.unlockCursor();
+    }
+
+    private static void endSelection(MinecraftClient client) {
+        if (!selectionHeld) return;
+        selectionHeld = false;
+        WheelController.confirmSelection(client);
+        if (client.player != null) client.mouse.lockCursor();
+    }
+
+    /** Polls the binding as a fallback for loaders that do not forward the GLFW callback to every mixin. */
+    private static void pollSelectionKey(MinecraftClient client) {
+        if (selectKey == null || client.currentScreen != null) {
+            selectionKeyDown = false;
+            selectionHeld = false;
+            return;
+        }
+        boolean down = selectKey.isPressed();
+        if (down && !selectionKeyDown) {
+            selectionKeyDown = true;
+            beginSelection(client);
+        } else if (!down && selectionKeyDown) {
+            selectionKeyDown = false;
+            endSelection(client);
         }
     }
 
@@ -79,9 +114,11 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
     }
 
     private static void tick(MinecraftClient client) {
+        pollSelectionKey(client);
         if (client.player == null || client.world == null || client.currentScreen != null
                 || !client.player.isAlive()) {
             selectionHeld = false;
+            selectionKeyDown = false;
             BowInputController.stop(client);
         }
         WheelController.refresh(client);

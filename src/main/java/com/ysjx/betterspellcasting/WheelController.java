@@ -245,7 +245,13 @@ public final class WheelController {
     }
 
     private static WrappedKeybinding.Unwrapped selectedCastBinding(GameOptions options) {
-        return new WrappedKeybinding.Unwrapped(castSelectedKey(options), WrappedKeybinding.Category.USE_KEY);
+        KeyBinding selected = castSelectedKey(options);
+        // The default custom binding is also the vanilla use key. Reusing the vanilla object keeps
+        // Connector/Forge input arbitration on the path Spell Engine already handles reliably.
+        if (selected.getBoundKeyTranslationKey().equals(options.useKey.getBoundKeyTranslationKey())) {
+            selected = options.useKey;
+        }
+        return new WrappedKeybinding.Unwrapped(selected, WrappedKeybinding.Category.USE_KEY);
     }
 
     private static boolean hasActiveCast() {
