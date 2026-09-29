@@ -4,15 +4,18 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.ModLoadingContext;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.options.OptionsScreen;
+import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
 /** Owns the Forge client lifecycle, input bindings, and shared selection state. */
@@ -26,10 +29,12 @@ public final class BetterSpellcastingClient {
 
     public BetterSpellcastingClient() {
         config = SpellcastingConfig.load();
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(BetterSpellcastingClient::registerKeys);
-        MinecraftForge.EVENT_BUS.addListener(BetterSpellcastingClient::onClientTick);
-        MinecraftForge.EVENT_BUS.addListener(BetterSpellcastingClient::onOverlay);
-        MinecraftForge.EVENT_BUS.addListener(BetterSpellcastingClient::onInteraction);
+        ModLoadingContext.get().getActiveContainer().getEventBus().addListener(BetterSpellcastingClient::registerKeys);
+        NeoForge.EVENT_BUS.addListener(BetterSpellcastingClient::onClientTick);
+        NeoForge.EVENT_BUS.addListener(BetterSpellcastingClient::onOverlay);
+        NeoForge.EVENT_BUS.addListener(BetterSpellcastingClient::onInteraction);
+        NeoForge.EVENT_BUS.addListener(BetterSpellcastingClient::onScreenInit);
+        NeoForge.EVENT_BUS.addListener(BetterSpellcastingClient::onKeyInput);
     }
 
     private static void registerKeys(RegisterKeyMappingsEvent event) {
@@ -77,14 +82,13 @@ public final class BetterSpellcastingClient {
         return selectionHeld && client.screen == null;
     }
 
-    private static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+    private static void onClientTick(ClientTickEvent.Post event) {
         tick(Minecraft.getInstance());
     }
 
-    private static void onOverlay(RenderGuiOverlayEvent.Post event) {
-        if (event.getOverlay().id().equals(VanillaGuiOverlay.HOTBAR.id())) {
-            SpellcastingRenderer.render(event.getGuiGraphics(), event.getPartialTick());
+    private static void onOverlay(RenderGuiLayerEvent.Post event) {
+        if (event.getName().equals(VanillaGuiLayers.HOTBAR)) {
+            SpellcastingRenderer.render(event.getGuiGraphics(), event.getPartialTick().getGameTimeDeltaPartialTick(false));
         }
     }
 
@@ -95,6 +99,20 @@ public final class BetterSpellcastingClient {
         } else if (event.isUseItem() && shouldBlockUse(client)) {
             event.setCanceled(true);
         }
+    }
+
+    private static void onKeyInput(InputEvent.Key event) {
+        onKey(Minecraft.getInstance().getWindow().getWindow(), event.getKey(), event.getScanCode(), event.getAction());
+    }
+
+    private static void onScreenInit(ScreenEvent.Init.Post event) {
+        if (!(event.getScreen() instanceof OptionsScreen screen)) return;
+        Button entry = Button.builder(Component.translatable("screen.better-spell-casting.entry"),
+                        ignored -> Minecraft.getInstance().setScreen(new SpellcastingSettingsScreen(screen)))
+                .bounds(screen.width / 2 - 100, screen.height - 52, 200, 20)
+                .build();
+        screen.renderables.add(entry);
+        event.addListener(entry);
     }
 
     private static void tick(Minecraft client) {
@@ -121,3 +139,4 @@ public final class BetterSpellcastingClient {
         SpellcastingController.refresh(Minecraft.getInstance());
     }
 }
+

@@ -83,7 +83,7 @@ public final class SpellcastingSettingsScreen extends Screen {
 
     @Override
     public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        renderBackground(context);
+        renderBackground(context, mouseX, mouseY, delta);
         context.drawCenteredString(font, title, width / 2, 16, 0xFFFFFF);
         super.render(context, mouseX, mouseY, delta);
     }

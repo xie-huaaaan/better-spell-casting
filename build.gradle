@@ -1,41 +1,38 @@
 plugins {
-    id 'eclipse'
-    id 'idea'
+    id 'java-library'
     id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
-    id 'org.spongepowered.mixin' version '0.7-SNAPSHOT'
+    id 'net.neoforged.moddev' version '2.0.107'
 }
 
 version = "${project.mod_version}+${project.minecraft_version}"
 group = project.maven_group
-
 base { archivesName = project.archives_base_name }
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 repositories {
     maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
     mavenCentral()
 }
 
-minecraft {
-    mappings channel: 'official', version: project.minecraft_version
-    copyIdeResources = true
+neoForge {
+    version = project.neo_version
     runs {
         configureEach {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            mods { better_spell_casting { source sourceSets.main } }
+            gameDirectory = project.file('run')
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            systemProperty 'forge.logging.console.level', 'debug'
         }
-        client { args '--username', 'Dev' }
+        client { client() }
+    }
+    mods {
+        better_spell_casting { sourceSet sourceSets.main }
     }
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}"
     def spellEnginePath = providers.gradleProperty('spell_engine_jar').orNull
             ?: System.getenv('SPELL_ENGINE_JAR')
-            ?: 'D:/projects/better-spell-casting/mc-version/.minecraft/versions/1.20.1-Forge_47.4.23/mods/[法术引擎] spell_engine-forge-1.10.7+1.20.1.jar'
+            ?: 'D:/projects/better-spell-casting/mc-version/.minecraft/versions/1.21.1-NeoForge_21.1.252/mods/[法术引擎] spell_engine-neoforge-1.10.8+1.21.1.jar'
     def spellEngineJar = file(spellEnginePath)
     if (!spellEngineJar.isFile()) throw new GradleException("Spell Engine JAR not found: $spellEnginePath")
     implementation files(spellEngineJar)
@@ -59,33 +56,26 @@ dependencies {
     tasks.named('compileJava') { dependsOn('extractTinyConfig') }
 }
 
-mixin {
-    add sourceSets.main, "better-spell-casting.refmap.json"
-    config "better-spell-casting.mixins.json"
-}
-
 processResources {
     inputs.property 'version', project.version
-    filesMatching('META-INF/mods.toml') { expand 'version': project.version }
+    filesMatching('META-INF/neoforge.mods.toml') { expand 'version': project.version }
 }
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-    options.release = 17
+    options.release = 21
 }
 
 jar {
-    manifest {
-        attributes([
-                'Specification-Title': 'better-spell-casting',
-                'Specification-Vendor': 'Better Spellcasting contributors',
-                'Specification-Version': '1',
-                'Implementation-Title': project.name,
-                'Implementation-Version': project.version,
-                'Implementation-Vendor': 'Better Spellcasting contributors',
-                'MixinConfigs': 'better-spell-casting.mixins.json'
-        ])
-    }
+    manifest.attributes([
+            'Specification-Title': 'better-spell-casting',
+            'Specification-Vendor': 'Better Spellcasting contributors',
+            'Specification-Version': '1',
+            'Implementation-Title': project.name,
+            'Implementation-Version': project.version,
+            'Implementation-Vendor': 'Better Spellcasting contributors',
+            'MixinConfigs': 'better-spell-casting.mixins.json'
+    ])
     from('LICENSE') { rename { "${it}_${project.archives_base_name}" } }
 }
 
