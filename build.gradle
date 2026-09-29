@@ -65,12 +65,18 @@ tasks.named('remapJar') { dependsOn('extractTinyConfig') }
 
 processResources {
     inputs.property 'version', project.version
+    inputs.property 'minecraft_version', project.minecraft_version
+    inputs.property 'loader_version', project.loader_version
+    inputs.property 'spell_engine_version', project.spell_engine_version
     filesMatching('fabric.mod.json') {
-        expand 'version': project.version
+        expand 'version': project.version,
+                'minecraft_version': project.minecraft_version,
+                'loader_version': project.loader_version,
+                'spell_engine_version': project.spell_engine_version
     }
 }
 
-def targetJavaVersion = 17
+def targetJavaVersion = project.minecraft_version == '1.20.1' ? 17 : 21
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.release = targetJavaVersion
