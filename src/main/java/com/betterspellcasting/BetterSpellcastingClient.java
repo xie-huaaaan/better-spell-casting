@@ -1,111 +1,123 @@
 package com.betterspellcasting;
 
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
-import net.fabricmc.fabric.api.client.screen.v1.Screens;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.option.OptionsScreen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextContent;
-import net.minecraft.text.TranslatableTextContent;
-import net.minecraft.util.Identifier;
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.ModLoadingContext;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.options.OptionsScreen;
+import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
-/** Owns Better Spellcasting's client lifecycle, input bindings, and selection state. */
-public final class BetterSpellcastingClient implements ClientModInitializer {
+/** Owns the Forge client lifecycle, input bindings, and shared selection state. */
+@Mod(BetterSpellcastingClient.MOD_ID)
+public final class BetterSpellcastingClient {
+    public static final String MOD_ID = "better_spell_casting";
     private static SpellcastingConfig config;
-    private static KeyBinding selectKey;
-    private static KeyBinding castSelectedKey;
+    private static KeyMapping selectKey;
+    private static KeyMapping castSelectedKey;
     private static boolean selectionHeld;
-    private static boolean selectionKeyDown;
 
-    @Override
-    public void onInitializeClient() {
+    public BetterSpellcastingClient() {
         config = SpellcastingConfig.load();
-        selectKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.better-spell-casting.select_spell", InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_X, "key.categories.better-spell-casting"));
-        castSelectedKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.better-spell-casting.cast_selected", InputUtil.Type.MOUSE,
-                GLFW.GLFW_MOUSE_BUTTON_RIGHT, "key.categories.better-spell-casting"));
-        ClientTickEvents.END_CLIENT_TICK.register(BetterSpellcastingClient::tick);
-        HudRenderCallback.EVENT.register(SpellcastingRenderer::render);
-        ScreenEvents.AFTER_INIT.register(BetterSpellcastingClient::addSettingsEntry);
+        ModLoadingContext.get().getActiveContainer().getEventBus().addListener(BetterSpellcastingClient::registerKeys);
+        NeoForge.EVENT_BUS.addListener(BetterSpellcastingClient::onClientTick);
+        NeoForge.EVENT_BUS.addListener(BetterSpellcastingClient::onOverlay);
+        NeoForge.EVENT_BUS.addListener(BetterSpellcastingClient::onInteraction);
+        NeoForge.EVENT_BUS.addListener(BetterSpellcastingClient::onScreenInit);
+        NeoForge.EVENT_BUS.addListener(BetterSpellcastingClient::onKeyInput);
+    }
+
+    private static void registerKeys(RegisterKeyMappingsEvent event) {
+        selectKey = new KeyMapping("key.better-spell-casting.select_spell", InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_X, "key.categories.better-spell-casting");
+        castSelectedKey = new KeyMapping("key.better-spell-casting.cast_selected", InputConstants.Type.MOUSE,
+                GLFW.GLFW_MOUSE_BUTTON_RIGHT, "key.categories.better-spell-casting");
+        event.register(selectKey);
+        event.register(castSelectedKey);
     }
 
     public static SpellcastingConfig config() { return config == null ? new SpellcastingConfig() : config; }
     public static boolean isShortcutCastingEnabled() { return config().shortcutCasting; }
     public static boolean isWheelOpen() { return selectionHeld; }
-    public static Identifier selectedSpell() { return SpellSelectionState.selected(); }
-    public static KeyBinding castSelectedKey() { return castSelectedKey; }
+    public static ResourceLocation selectedSpell() { return SpellSelectionState.selected(); }
+    public static KeyMapping castSelectedKey() { return castSelectedKey; }
 
     public static void onKey(long window, int key, int scanCode, int action) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (selectKey == null || window != client.getWindow().getHandle()
-                || !selectKey.matchesKey(key, scanCode)) return;
-        if (client.currentScreen != null) {
-            selectionKeyDown = false;
+        Minecraft client = Minecraft.getInstance();
+        if (selectKey == null || window != client.getWindow().getWindow()
+                || !selectKey.matches(key, scanCode)) return;
+        if (client.screen != null) {
             selectionHeld = false;
             return;
         }
-        if (action == GLFW.GLFW_PRESS) {
-            selectionKeyDown = true;
-            beginSelection(client);
-        } else if (action == GLFW.GLFW_RELEASE) {
-            selectionKeyDown = false;
-            endSelection(client);
-        }
+        if (action == GLFW.GLFW_PRESS) beginSelection(client);
+        else if (action == GLFW.GLFW_RELEASE) endSelection(client);
     }
 
-    private static void beginSelection(MinecraftClient client) {
+    private static void beginSelection(Minecraft client) {
         if (selectionHeld) return;
         selectionHeld = true;
         SpellcastingController.ensureSelection();
-        client.mouse.unlockCursor();
+        client.mouseHandler.releaseMouse();
     }
 
-    private static void endSelection(MinecraftClient client) {
+    private static void endSelection(Minecraft client) {
         if (!selectionHeld) return;
         selectionHeld = false;
         SpellcastingController.confirmSelection(client);
-        if (client.player != null) client.mouse.lockCursor();
+        if (client.player != null) client.mouseHandler.grabMouse();
     }
 
-    /** Polls the binding as a fallback for loaders that do not forward the GLFW callback to every mixin. */
-    private static void pollSelectionKey(MinecraftClient client) {
-        if (selectKey == null || client.currentScreen != null) {
-            selectionKeyDown = false;
-            selectionHeld = false;
-            return;
-        }
-        boolean down = selectKey.isPressed();
-        if (down && !selectionKeyDown) {
-            selectionKeyDown = true;
-            beginSelection(client);
-        } else if (!down && selectionKeyDown) {
-            selectionKeyDown = false;
-            endSelection(client);
+    public static boolean shouldBlockUse(Minecraft client) {
+        return selectionHeld && client.screen == null;
+    }
+
+    private static void onClientTick(ClientTickEvent.Post event) {
+        tick(Minecraft.getInstance());
+    }
+
+    private static void onOverlay(RenderGuiLayerEvent.Post event) {
+        if (event.getName().equals(VanillaGuiLayers.HOTBAR)) {
+            SpellcastingRenderer.render(event.getGuiGraphics(), event.getPartialTick().getGameTimeDeltaPartialTick(false));
         }
     }
 
-    public static boolean shouldBlockUse(MinecraftClient client) {
-        return selectionHeld && client.currentScreen == null;
+    private static void onInteraction(InputEvent.InteractionKeyMappingTriggered event) {
+        Minecraft client = Minecraft.getInstance();
+        if (event.isAttack() && BowInputController.blocksAttack(client)) {
+            event.setCanceled(true);
+        } else if (event.isUseItem() && shouldBlockUse(client)) {
+            event.setCanceled(true);
+        }
     }
 
-    private static void tick(MinecraftClient client) {
-        pollSelectionKey(client);
-        if (client.player == null || client.world == null || client.currentScreen != null
-                || !client.player.isAlive()) {
+    private static void onKeyInput(InputEvent.Key event) {
+        onKey(Minecraft.getInstance().getWindow().getWindow(), event.getKey(), event.getScanCode(), event.getAction());
+    }
+
+    private static void onScreenInit(ScreenEvent.Init.Post event) {
+        if (!(event.getScreen() instanceof OptionsScreen screen)) return;
+        Button entry = Button.builder(Component.translatable("screen.better-spell-casting.entry"),
+                        ignored -> Minecraft.getInstance().setScreen(new SpellcastingSettingsScreen(screen)))
+                .bounds(screen.width / 2 - 100, screen.height - 52, 200, 20)
+                .build();
+        screen.renderables.add(entry);
+        event.addListener(entry);
+    }
+
+    private static void tick(Minecraft client) {
+        if (client.player == null || client.level == null || client.screen != null || !client.player.isAlive()) {
             selectionHeld = false;
-            selectionKeyDown = false;
             BowInputController.stop(client);
         }
         SpellcastingController.refresh(client);
@@ -113,71 +125,18 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
         SpellcastingController.routeHotbar(client);
     }
 
-    public static void setSelectedSpell(Identifier id) {
+    public static void setSelectedSpell(ResourceLocation id) {
         if (id != null && SpellSelectionState.select(id)) {
-            SpellcastingController.routeHotbar(MinecraftClient.getInstance());
+            SpellcastingController.routeHotbar(Minecraft.getInstance());
         }
     }
 
     public static void applyConfig(SpellcastingConfig updated) {
-        BowInputController.stop(MinecraftClient.getInstance());
+        BowInputController.stop(Minecraft.getInstance());
         config = updated.copy().normalized();
         config.save();
         selectionHeld = false;
-        SpellcastingController.refresh(MinecraftClient.getInstance());
-    }
-
-    private static void addSettingsEntry(MinecraftClient client, Screen screen, int width, int height) {
-        if (!(screen instanceof OptionsScreen)) return;
-        ClickableWidget done = null;
-        for (ClickableWidget button : Screens.getButtons(screen)) {
-            TextContent content = button.getMessage().getContent();
-            if (content instanceof TranslatableTextContent translatable
-                    && translatable.getKey().equals("gui.done")) done = button;
-        }
-        if (done == null) return;
-        ClickableWidget doneButton = done;
-        var options = Screens.getButtons(screen).stream()
-                .filter(button -> button != doneButton && button.visible)
-                .sorted(java.util.Comparator.comparingInt(ClickableWidget::getY)
-                        .thenComparingInt(ClickableWidget::getX)).toList();
-        if (options.isEmpty()) return;
-        var rows = options.stream().map(ClickableWidget::getY).distinct().sorted().toList();
-        int rowStep = inferRowStep(rows, done.getY() - rows.get(rows.size() - 1));
-        int cellWidth = options.stream().mapToInt(ClickableWidget::getWidth).min().orElse(done.getWidth() / 2);
-        int x = options.stream().mapToInt(ClickableWidget::getX).min().orElse(done.getX());
-        int y = done.getY();
-        int buttonWidth = cellWidth;
-        if (done.getY() + rowStep + done.getHeight() <= height - 4) {
-            done.setY(done.getY() + rowStep);
-        } else {
-            int rowY = rows.get(rows.size() - 1);
-            y = rowY;
-            int rowMaxX = options.stream().filter(button -> button.getY() == rowY)
-                    .mapToInt(ClickableWidget::getX).max().orElse(x);
-            x = rowMaxX + cellWidth + Math.max(0, rowMaxX - x - cellWidth);
-            if (x + cellWidth > width) {
-                int gridWidth = rowMaxX + cellWidth - options.stream()
-                        .mapToInt(ClickableWidget::getX).min().orElse(x);
-                x = (width - gridWidth) / 2;
-                y = Math.max(0, rows.get(0) - rowStep);
-                buttonWidth = gridWidth;
-            }
-        }
-        Screens.getButtons(screen).add(ButtonWidget.builder(Text.translatable("screen.better-spell-casting.entry"),
-                        ignored -> client.setScreen(new SpellcastingSettingsScreen(screen)))
-                .dimensions(x, y, buttonWidth, done.getHeight())
-                .tooltip(net.minecraft.client.gui.tooltip.Tooltip.of(
-                        Text.translatable("screen.better-spell-casting.entry.tooltip")))
-                .build());
-    }
-
-    private static int inferRowStep(java.util.List<Integer> rows, int doneGap) {
-        int step = doneGap;
-        for (int i = 1; i < rows.size(); i++) {
-            int gap = rows.get(i) - rows.get(i - 1);
-            if (gap > 0 && (step <= 0 || gap < step)) step = gap;
-        }
-        return Math.max(24, step);
+        SpellcastingController.refresh(Minecraft.getInstance());
     }
 }
+

@@ -1,104 +1,83 @@
 package com.betterspellcasting;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.item.BowItem;
-import net.minecraft.item.CrossbowItem;
-import net.minecraft.item.Item;
-import net.minecraft.util.Hand;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.InteractionHand;
 
 /** Keeps vanilla bow and crossbow use semantics while moving their button to attack. */
 public final class BowInputController {
     private static boolean leftButtonActive;
     private static boolean bypassSpellInput;
-    private static boolean observedUsingItem;
-    private static int restartDelay;
+    private static int useDelay;
 
     private BowInputController() {
     }
 
-    public static boolean enabled(MinecraftClient client) {
+    public static boolean enabled(Minecraft client) {
         return BetterSpellcastingClient.config().bowLeftClick
                 && client != null
-                && client.currentScreen == null
-                && client.world != null
+                && client.screen == null
+                && client.level != null
                 && client.player != null
                 && client.player.isAlive()
-                && isRangedWeapon(client.player.getMainHandStack().getItem());
+                && isRangedWeapon(client.player.getMainHandItem().getItem());
     }
 
     public static boolean isRangedWeapon(Item item) {
         return item instanceof BowItem || item instanceof CrossbowItem;
     }
 
-    public static void tick(MinecraftClient client) {
+    public static void tick(Minecraft client) {
         if (!enabled(client)) {
             stop(client);
             return;
         }
 
-        if (client.interactionManager == null) {
+        if (client.gameMode == null) {
             stop(client);
             return;
         }
-        if (!client.options.attackKey.isPressed()) {
+        if (!client.options.keyAttack.isDown()) {
             stop(client);
             return;
         }
 
-        if (!leftButtonActive && client.options.attackKey.wasPressed()) {
+        if (!leftButtonActive) {
             leftButtonActive = true;
-            restartDelay = 0;
         }
-        if (!leftButtonActive) return;
-
-        if (client.player.isUsingItem()) {
-            observedUsingItem = true;
-            restartDelay = 0;
+        if (client.player.isUsingItem()) return;
+        if (useDelay > 0) {
+            useDelay--;
             return;
         }
-        if (observedUsingItem) {
-            observedUsingItem = false;
-            restartDelay = 2;
-            return;
-        }
-        if (restartDelay > 0) {
-            restartDelay--;
-            return;
-        }
-
-        var result = interactVanillaItem(client);
-        if (result.isAccepted() && client.player.isUsingItem()) {
-            observedUsingItem = true;
-        } else {
-            // Archers' auto-fire hook sets a two-tick item-use cooldown after releasing a shot.
-            restartDelay = 2;
-        }
+        useDelay = 4;
+        interactVanillaItem(client);
     }
 
-    public static void stop(MinecraftClient client) {
-        if (leftButtonActive && client != null && client.interactionManager != null && client.player != null
+    public static void stop(Minecraft client) {
+        if (leftButtonActive && client != null && client.gameMode != null && client.player != null
                 && client.player.isUsingItem()) {
-            client.interactionManager.stopUsingItem(client.player);
+            client.player.stopUsingItem();
         }
         leftButtonActive = false;
-        observedUsingItem = false;
-        restartDelay = 0;
+        useDelay = 0;
     }
 
-    public static boolean blocksAttack(MinecraftClient client) {
+    public static boolean blocksAttack(Minecraft client) {
         return enabled(client);
     }
 
-    public static boolean suppressVanillaStop(MinecraftClient client) {
-        return leftButtonActive && enabled(client) && client.options.attackKey.isPressed();
+    public static boolean suppressVanillaStop(Minecraft client) {
+        return leftButtonActive && enabled(client) && client.options.keyAttack.isDown();
     }
 
     /** Prevents Spell Engine's right-click arbitration from consuming the bow use call. */
-    private static net.minecraft.util.ActionResult interactVanillaItem(MinecraftClient client) {
+    private static void interactVanillaItem(Minecraft client) {
         bypassSpellInput = true;
         try {
-            return client.interactionManager.interactItem(client.player, Hand.MAIN_HAND);
+            client.gameMode.useItem(client.player, InteractionHand.MAIN_HAND);
         } finally {
             bypassSpellInput = false;
         }
@@ -108,3 +87,4 @@ public final class BowInputController {
         return bypassSpellInput;
     }
 }
+
