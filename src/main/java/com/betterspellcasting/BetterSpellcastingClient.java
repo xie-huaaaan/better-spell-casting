@@ -14,7 +14,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.lwjgl.glfw.GLFW;
@@ -66,9 +65,27 @@ public final class BetterSpellcastingClient {
 
     private static void onScreenInit(ScreenEvent.Init.Post event) {
         if (!(event.getScreen() instanceof OptionsScreen optionsScreen)) return;
-        event.addListener(Button.builder(Component.translatable("screen.better-spell-casting.entry"),
+        Button done = null;
+        Button lastLeft = null;
+        int lastBottom = Integer.MIN_VALUE;
+        for (var listener : event.getListenersList()) {
+            if (!(listener instanceof Button button)) continue;
+            if (button.getMessage().getString().equals(Component.translatable("gui.done").getString())) {
+                done = button;
+                continue;
+            }
+            if (button.getX() < optionsScreen.width / 2 && button.getY() + button.getHeight() > lastBottom) {
+                lastLeft = button;
+                lastBottom = button.getY() + button.getHeight();
+            }
+        }
+        if (lastLeft == null) return;
+        int y = lastBottom + 4;
+        if (done != null) y = Math.min(y, done.getY() - lastLeft.getHeight() - 4);
+        Button entry = Button.builder(Component.translatable("screen.better-spell-casting.entry"),
                         ignored -> Minecraft.getInstance().setScreen(new SpellcastingSettingsScreen(optionsScreen)))
-                .bounds(optionsScreen.width / 2 - 100, optionsScreen.height - 52, 200, 20).build());
+                .bounds(lastLeft.getX(), y, lastLeft.getWidth(), lastLeft.getHeight()).build();
+        event.addListener(entry);
     }
 
     private static void beginSelection(Minecraft client) {
@@ -114,6 +131,7 @@ public final class BetterSpellcastingClient {
             selectionHeld = false;
             BowInputController.stop(client);
         }
+        BowInputController.tick(client);
         SpellcastingController.refresh(client);
         if (selectionHeld) SpellcastingController.updateSelection(client);
         SpellcastingController.routeHotbar(client);
