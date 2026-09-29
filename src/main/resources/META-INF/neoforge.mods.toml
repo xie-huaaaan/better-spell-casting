@@ -17,20 +17,20 @@ config="better-spell-casting.mixins.json"
 [[dependencies.better_spell_casting]]
 modId="neoforge"
 type="required"
-versionRange="[21.1,)"
+versionRange="[26.1,)"
 ordering="NONE"
 side="CLIENT"
 
 [[dependencies.better_spell_casting]]
 modId="minecraft"
 type="required"
-versionRange="[1.21.1,1.22)"
+versionRange="[26.1.2,26.2)"
 ordering="NONE"
 side="CLIENT"
 
 [[dependencies.better_spell_casting]]
 modId="spell_engine"
 type="required"
-versionRange="[1.10.8,)"
+versionRange="[1.10.5,)"
 ordering="AFTER"
 side="CLIENT"

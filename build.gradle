@@ -1,13 +1,13 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'net.neoforged.moddev' version '2.0.107'
+    id 'net.neoforged.moddev' version '2.0.148'
 }
 
 version = "${project.mod_version}+${project.minecraft_version}"
 group = project.maven_group
 base { archivesName = project.archives_base_name }
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
 repositories {
     maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
@@ -32,7 +32,7 @@ neoForge {
 dependencies {
     def spellEnginePath = providers.gradleProperty('spell_engine_jar').orNull
             ?: System.getenv('SPELL_ENGINE_JAR')
-            ?: 'D:/projects/better-spell-casting/mc-version/.minecraft/versions/1.21.1-NeoForge_21.1.252/mods/[法术引擎] spell_engine-neoforge-1.10.8+1.21.1.jar'
+            ?: 'D:/projects/better-spell-casting/mc-version/.minecraft/versions/26.1-NeoForge_26.1.0.19-beta/mods/[法术引擎] spell_engine-neoforge-1.10.5+26.1.2.jar'
     def spellEngineJar = file(spellEnginePath)
     if (!spellEngineJar.isFile()) throw new GradleException("Spell Engine JAR not found: $spellEnginePath")
     implementation files(spellEngineJar)
@@ -63,7 +63,7 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-    options.release = 21
+    options.release = 25
 }
 
 jar {

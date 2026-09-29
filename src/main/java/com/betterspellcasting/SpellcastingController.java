@@ -1,9 +1,9 @@
 package com.betterspellcasting;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.GameOptions;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.resources.Identifier;
 import net.spell_engine.client.input.SpellHotbar;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.client.input.WrappedKeybinding;
@@ -57,12 +57,12 @@ public final class SpellcastingController {
         SpellSelectionState.select(spellId(slots.get(0)));
     }
 
-    public static void refresh(MinecraftClient client) {
+    public static void refresh(Minecraft client) {
         List<SpellHotbar.Slot> slots = castSlots();
         SpellSelectionState.syncCandidates(slots.stream().map(SpellcastingController::spellId).toList());
     }
 
-    public static void confirmSelection(MinecraftClient client) {
+    public static void confirmSelection(Minecraft client) {
         refresh(client);
         routeHotbar(client);
     }
@@ -80,15 +80,15 @@ public final class SpellcastingController {
         return BetterSpellcastingClient.selectedSpell();
     }
 
-    public static void updateSelection(MinecraftClient client) {
+    public static void updateSelection(Minecraft client) {
         List<SpellHotbar.Slot> slots = castSlots();
         if (slots.isEmpty()) return;
-        double scaleX = client.getWindow().getScaledWidth() / (double) client.getWindow().getWidth();
-        double scaleY = client.getWindow().getScaledHeight() / (double) client.getWindow().getHeight();
-        double centerX = client.getWindow().getScaledWidth() * 0.5;
-        double centerY = client.getWindow().getScaledHeight() * 0.5;
-        double mouseX = client.mouse.getX() * scaleX;
-        double mouseY = client.mouse.getY() * scaleY;
+        double scaleX = client.getWindow().getGuiScaledWidth() / (double) client.getWindow().getWidth();
+        double scaleY = client.getWindow().getGuiScaledHeight() / (double) client.getWindow().getHeight();
+        double centerX = client.getWindow().getGuiScaledWidth() * 0.5;
+        double centerY = client.getWindow().getGuiScaledHeight() * 0.5;
+        double mouseX = client.mouseHandler.xpos() * scaleX;
+        double mouseY = client.mouseHandler.ypos() * scaleY;
         double dx = mouseX - centerX;
         double dy = mouseY - centerY;
         double distance = Math.sqrt(dx * dx + dy * dy);
@@ -99,7 +99,7 @@ public final class SpellcastingController {
         BetterSpellcastingClient.setSelectedSpell(spellId(slots.get(index)));
     }
 
-    public static void routeHotbar(MinecraftClient client) {
+    public static void routeHotbar(Minecraft client) {
         if (client.player == null) {
             resetInputOwner();
             return;
@@ -110,7 +110,7 @@ public final class SpellcastingController {
             return;
         }
         ensureSelection();
-        GameOptions options = client.options;
+        Options options = client.options;
         List<WrappedKeybinding> shortcuts = Keybindings.Wrapped.all();
         List<SpellHotbar.Slot> routed = new ArrayList<>();
         List<SpellHotbar.Slot> shortcutSlots = new ArrayList<>();
@@ -154,7 +154,7 @@ public final class SpellcastingController {
         SpellHotbar.INSTANCE.structuredSlots = new SpellHotbar.StructuredSlots(routedSelected, List.copyOf(shortcutSlots));
     }
 
-    private static WrappedKeybinding normalizedShortcut(GameOptions options,
+    private static WrappedKeybinding normalizedShortcut(Options options,
                                                          List<WrappedKeybinding> shortcuts,
                                                          int index) {
         if (index < 0 || index >= shortcuts.size()) return null;
@@ -163,14 +163,14 @@ public final class SpellcastingController {
         if (unwrapped != null && unwrapped.vanillaHandle() != WrappedKeybinding.Category.USE_KEY) {
             return shortcut;
         }
-        if (index < options.hotbarKeys.length) {
-            return new WrappedKeybinding(options.hotbarKeys[index], WrappedKeybinding.VanillaAlternative.NONE);
+        if (index < options.keyHotbarSlots.length) {
+            return new WrappedKeybinding(options.keyHotbarSlots[index], WrappedKeybinding.VanillaAlternative.NONE);
         }
         return null;
     }
 
     /** Returns the same configured key used by routeHotbar for a candidate index. */
-    public static KeyBinding shortcutKey(MinecraftClient client, int index) {
+    public static KeyMapping shortcutKey(Minecraft client, int index) {
         if (client == null || index < 0) return null;
         List<WrappedKeybinding> bindings = Keybindings.Wrapped.all();
         if (index >= bindings.size()) return null;
@@ -185,29 +185,29 @@ public final class SpellcastingController {
      * selects the input source from the list being processed while keeping the same Slot
      * instance for the use-key path.
      */
-    private static WrappedKeybinding routedBinding(GameOptions options, WrappedKeybinding shortcut,
+    private static WrappedKeybinding routedBinding(Options options, WrappedKeybinding shortcut,
                                                     Identifier spellId, boolean selected) {
-        return new WrappedKeybinding(options.useKey, WrappedKeybinding.VanillaAlternative.USE_KEY) {
+        return new WrappedKeybinding(options.keyUse, WrappedKeybinding.VanillaAlternative.USE_KEY) {
             @Override
-            public Unwrapped get(GameOptions currentOptions) {
+            public Unwrapped get(Options currentOptions) {
                 if (hasActiveCast()) {
                     if (!spellId.equals(inputOwnerSpell)) return null;
                     return inputOwnerBinding;
                 }
                 if (inputPass == InputPass.SHORTCUT) {
-                    if (selected && castSelectedKey(currentOptions).isPressed()) {
+                    if (selected && castSelectedKey(currentOptions).isDown()) {
                         return selectedCastBinding(currentOptions);
                     }
                     if (shortcut != null) return shortcut.get(currentOptions);
                     return selected ? selectedCastBinding(currentOptions) : null;
                 }
                 if (inputPass == InputPass.USE || inputPass == InputPass.FULL) {
-                    if (selected && (inputPass == InputPass.USE || castSelectedKey(currentOptions).isPressed())) {
+                    if (selected && (inputPass == InputPass.USE || castSelectedKey(currentOptions).isDown())) {
                         return selectedCastBinding(currentOptions);
                     }
                     if (inputPass == InputPass.FULL && shortcut != null) {
                         Unwrapped direct = shortcut.get(currentOptions);
-                        if (direct != null && direct.keyBinding().isPressed()) return direct;
+                        if (direct != null && direct.keyBinding().isDown()) return direct;
                     }
                     if (selected) {
                         if (shortcut != null) {
@@ -227,23 +227,23 @@ public final class SpellcastingController {
         };
     }
 
-    private static KeyBinding castSelectedKey(GameOptions options) {
-        KeyBinding binding = BetterSpellcastingClient.castSelectedKey();
-        return binding == null ? options.useKey : binding;
+    private static KeyMapping castSelectedKey(Options options) {
+        KeyMapping binding = BetterSpellcastingClient.castSelectedKey();
+        return binding == null ? options.keyUse : binding;
     }
 
-    private static WrappedKeybinding.Unwrapped selectedCastBinding(GameOptions options) {
-        KeyBinding selected = castSelectedKey(options);
+    private static WrappedKeybinding.Unwrapped selectedCastBinding(Options options) {
+        KeyMapping selected = castSelectedKey(options);
         // The default custom binding is also the vanilla use key. Reusing the vanilla object keeps
         // Connector/Forge input arbitration on the path Spell Engine already handles reliably.
-        if (selected.getBoundKeyTranslationKey().equals(options.useKey.getBoundKeyTranslationKey())) {
-            selected = options.useKey;
+        if (selected.same(options.keyUse)) {
+            selected = options.keyUse;
         }
         return new WrappedKeybinding.Unwrapped(selected, WrappedKeybinding.Category.USE_KEY);
     }
 
     private static boolean hasActiveCast() {
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
         if (client.player == null) return false;
         var progress = ((SpellCaster.Client) client.player).getSpellCastProgress();
         if (progress == null || inputOwnerProcess == null || progress.process() != inputOwnerProcess) {
@@ -270,14 +270,14 @@ public final class SpellcastingController {
     }
 
     public static void finishHandle(SpellHotbar.Handle handled) {
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
         if (client.player == null) {
             resetInputOwner();
             return;
         }
         var progress = ((SpellCaster.Client) client.player).getSpellCastProgress();
         if (handled != null && progress != null
-                && handled.spell().matchesId(progress.process().id())) {
+                && handled.spell().unwrapKey().map(key -> key.identifier().equals(progress.process().id())).orElse(false)) {
             inputOwnerSpell = progress.process().id();
             inputOwnerProcess = progress.process();
             inputOwnerBinding = new WrappedKeybinding.Unwrapped(handled.keyBinding(), handled.category());

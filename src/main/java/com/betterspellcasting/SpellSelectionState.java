@@ -1,6 +1,6 @@
 package com.betterspellcasting;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 import java.util.List;
 import java.util.Objects;

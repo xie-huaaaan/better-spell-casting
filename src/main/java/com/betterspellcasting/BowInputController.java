@@ -1,5 +1,6 @@
 package com.betterspellcasting;
 
+import com.betterspellcasting.mixin.MinecraftUseDelayAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.CrossbowItem;
@@ -10,7 +11,6 @@ import net.minecraft.world.InteractionHand;
 public final class BowInputController {
     private static boolean leftButtonActive;
     private static boolean bypassSpellInput;
-    private static int useDelay;
 
     private BowInputController() {
     }
@@ -48,21 +48,18 @@ public final class BowInputController {
             leftButtonActive = true;
         }
         if (client.player.isUsingItem()) return;
-        if (useDelay > 0) {
-            useDelay--;
-            return;
-        }
-        useDelay = 4;
+        MinecraftUseDelayAccessor useDelay = (MinecraftUseDelayAccessor) client;
+        if (useDelay.betterSpellcasting$getUseDelay() > 0) return;
+        useDelay.betterSpellcasting$setUseDelay(4);
         interactVanillaItem(client);
     }
 
     public static void stop(Minecraft client) {
         if (leftButtonActive && client != null && client.gameMode != null && client.player != null
                 && client.player.isUsingItem()) {
-            client.player.stopUsingItem();
+            client.gameMode.releaseUsingItem(client.player);
         }
         leftButtonActive = false;
-        useDelay = 0;
     }
 
     public static boolean blocksAttack(Minecraft client) {
@@ -87,4 +84,3 @@ public final class BowInputController {
         return bypassSpellInput;
     }
 }
-
