@@ -1,10 +1,10 @@
-# Better Spellcasting
+# Better Spell Casting
 
-Better Spellcasting is a client-side overhaul of the Spell Engine casting workflow. It absorbs the useful spell selection and casting controls from `spell-cycle` and adds a radial selector, a clearer spell HUD, configurable casting keys, and optional left-click bow and crossbow controls.
+| English | [简体中文](README.zh-CN.md) |
+
+Better Spell Casting is a client-side overhaul of the Spell Engine casting workflow. It adds a radial selector, a clearer spell HUD, configurable casting keys, and optional left-click bow and crossbow controls.
 
 The mod does not add spells, change spell data, or require installation on a server. It follows Spell Engine's own candidate ordering and availability rules, so content mods remain responsible for their own spells and dependencies.
-
-简体中文：[README.zh-CN.md](README.zh-CN.md)
 
 ## Features
 
@@ -58,4 +58,3 @@ The output is written to `build/libs/` using the file names listed above. Older 
 The repository branches correspond to the six supported targets listed in the installation table. Loader-specific input, GUI, rendering, and metadata code stays on the target branch; the behavior and configuration model are kept aligned where the platform APIs allow it.
 
 This project is intended to remain a client-only enhancement. It does not add a server protocol, register gameplay content, or take compile-time dependencies on Wizards, Paladins & Priests, Archers, Rogues & Warriors, or other content mods.
-
