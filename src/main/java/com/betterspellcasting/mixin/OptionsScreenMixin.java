@@ -23,7 +23,7 @@ public abstract class OptionsScreenMixin {
         Screen screen = (Screen) (Object) this;
         row.addChild(Button.builder(Component.translatable("screen.better-spell-casting.entry"),
                         ignored -> Minecraft.getInstance().setScreen(new SpellcastingSettingsScreen(screen)))
-                .width(200).build());
+                .width(150).build());
         return row.addChild(done, span, settings);
     }
 }

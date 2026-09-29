@@ -57,7 +57,7 @@ public final class BowInputController {
     public static void stop(Minecraft client) {
         if (leftButtonActive && client != null && client.gameMode != null && client.player != null
                 && client.player.isUsingItem()) {
-            client.player.stopUsingItem();
+            client.gameMode.releaseUsingItem(client.player);
         }
         leftButtonActive = false;
         useCooldown = 0;
