@@ -2,6 +2,7 @@
   "screen.better-spell-casting.entry": "法術切換設定",
   "screen.better-spell-casting.entry.tooltip": "設定法術選擇與施法",
   "key.categories.better-spell-casting": "更好的施法操作",
+  "key.category.better-spell-casting.controls": "更好的施法操作",
   "key.better-spell-casting.select_spell": "切換選中法術",
   "key.better-spell-casting.cast_selected": "釋放選中法術",
   "screen.better-spell-casting.title": "更好的施法操作",

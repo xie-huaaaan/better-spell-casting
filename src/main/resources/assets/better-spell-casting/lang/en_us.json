@@ -2,6 +2,7 @@
   "screen.better-spell-casting.entry": "Spellcasting Settings",
   "screen.better-spell-casting.entry.tooltip": "Configure spell selection and casting",
   "key.categories.better-spell-casting": "Better Spellcasting",
+  "key.category.better-spell-casting.controls": "Better Spellcasting",
   "key.better-spell-casting.select_spell": "Select spell",
   "key.better-spell-casting.cast_selected": "Cast selected spell",
   "screen.better-spell-casting.title": "Better Spellcasting",

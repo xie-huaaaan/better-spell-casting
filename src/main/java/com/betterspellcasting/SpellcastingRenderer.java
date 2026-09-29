@@ -90,7 +90,7 @@ public final class SpellcastingRenderer {
                 }
             }
             if (SpellcastingController.spellId(slot).equals(SpellcastingController.hudSelectedSpell())) {
-                context.outline(sx - 1, y - 1, sx + slotWidth + 1, y + slotHeight + 1, 0xFFF0C978);
+                context.outline(sx - 1, y - 1, slotWidth + 2, slotHeight + 2, 0xFFF0C978);
             }
             if (showKeys && indexOffset + i < 9) {
                 KeyMappingLabel.draw(context, client, SpellcastingController.shortcutKey(client, indexOffset + i),
@@ -109,45 +109,69 @@ public final class SpellcastingRenderer {
         int inner = 38;
         int selected = SpellcastingController.selectedIndex();
         context.fill(0, 0, width, height, 0x33000000);
+        drawRadialSectors(context, cx, cy, inner, outer, slots.size(), selected);
         for (int i = 0; i < slots.size(); i++) {
-            int color = i == selected ? 0xC8D9A86C : 0x8C241B16;
-            drawSectorApproximation(context, cx, cy, inner, outer, i, slots.size(), color);
             double angle = -Math.PI / 2 + Math.PI * 2 * i / slots.size();
             int radius = outer - 19;
             int x = cx + (int) Math.round(Math.cos(angle) * radius) - 8;
             int y = cy + (int) Math.round(Math.sin(angle) * radius) - 8;
             context.blit(RenderPipelines.GUI_TEXTURED, SpellRender.iconTexture(SpellcastingController.spellId(slots.get(i))),
                     x, y, 0, 0, 16, 16, 16, 16);
-            if (i == selected) context.outline(x - 2, y - 2, x + 18, y + 18, 0xFFF0C978);
+            if (i == selected) context.outline(x - 2, y - 2, 20, 20, 0xFFF0C978);
         }
-        context.fill(cx - 24, cy - 24, cx + 24, cy + 24, 0xDD120E0A);
+        for (int dy = -inner; dy <= inner; dy++) {
+            int halfWidth = (int) Math.sqrt(inner * inner - dy * dy);
+            context.fill(cx - halfWidth, cy + dy, cx + halfWidth + 1, cy + dy + 1, 0xDD120E0A);
+        }
         if (selected >= 0 && selected < slots.size()) {
             renderDetails(context, client, SpellcastingController.spellId(slots.get(selected)),
                     Math.min(width - 260, cx + outer + 24), cy - 90, width, height);
         }
     }
 
-    private static void drawSectorApproximation(GuiGraphicsExtractor context, int cx, int cy,
-                                                  int inner, int outer, int index, int count, int color) {
-        double start = -Math.PI / 2 - Math.PI / count + index * Math.PI * 2 / count;
-        double end = start + Math.PI * 2 / count;
-        int steps = Math.max(4, (int) Math.ceil((end - start) * outer / 8));
-        for (int s = 0; s <= steps; s++) {
-            double angle = start + (end - start) * s / steps;
+    private static void drawRadialSectors(GuiGraphicsExtractor context, int cx, int cy,
+                                          int inner, int outer, int count, int selected) {
+        double sectorAngle = Math.PI * 2 / count;
+        int innerSquared = inner * inner;
+        int outerSquared = outer * outer;
+        for (int dy = -outer; dy <= outer; dy++) {
+            int extent = (int) Math.sqrt(outerSquared - dy * dy);
+            int previousColor = 0;
+            int spanStart = -extent;
+            for (int dx = -extent; dx <= extent + 1; dx++) {
+                int color = 0;
+                int distanceSquared = dx * dx + dy * dy;
+                if (dx <= extent && distanceSquared >= innerSquared && distanceSquared <= outerSquared) {
+                    double angle = Math.atan2(dx, -dy);
+                    if (angle < 0) angle += Math.PI * 2;
+                    int sector = (int) Math.floor((angle + sectorAngle / 2) / sectorAngle) % count;
+                    color = sector == selected ? 0xC8D9A86C : 0x8C241B16;
+                }
+                if (color != previousColor) {
+                    if (previousColor != 0) {
+                        context.fill(cx + spanStart, cy + dy, cx + dx, cy + dy + 1, previousColor);
+                    }
+                    spanStart = dx;
+                    previousColor = color;
+                }
+            }
+        }
+        for (int i = 0; i < count; i++) {
+            double angle = -Math.PI / 2 - Math.PI / count + i * sectorAngle;
             int x0 = cx + (int) Math.round(Math.cos(angle) * inner);
             int y0 = cy + (int) Math.round(Math.sin(angle) * inner);
             int x1 = cx + (int) Math.round(Math.cos(angle) * outer);
             int y1 = cy + (int) Math.round(Math.sin(angle) * outer);
-            drawLine(context, x0, y0, x1, y1, color);
+            drawDivider(context, x0, y0, x1, y1);
         }
     }
 
-    private static void drawLine(GuiGraphicsExtractor context, int x0, int y0, int x1, int y1, int color) {
+    private static void drawDivider(GuiGraphicsExtractor context, int x0, int y0, int x1, int y1) {
         int dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
         int dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
         int err = dx + dy;
         while (true) {
-            context.fill(x0 - 2, y0 - 2, x0 + 3, y0 + 3, color);
+            context.fill(x0, y0, x0 + 2, y0 + 2, 0xD0E0B76B);
             if (x0 == x1 && y0 == y1) break;
             int e2 = 2 * err;
             if (e2 >= dy) { err += dy; x0 += sx; }
