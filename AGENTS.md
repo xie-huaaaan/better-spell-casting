@@ -19,9 +19,11 @@
 
 ## Git and validation
 
-- Keep `main` buildable. Use focused branches for platform or subsystem work.
+- Keep `1.20.1-fabric` buildable as the default integration and release baseline. Use the six version branches for loader and Minecraft-specific work.
+- Keep branch names aligned with the target (`1.20.1-fabric`, `1.20.1-forge`, `1.21.1-fabric`, `1.21.1-neoforge`, `26.1-fabric`, and `26.1-neoforge`). Changes to shared documentation or ignore rules should be synchronized across all target branches.
 - Commit each coherent refactor or platform milestone so it can be reverted independently.
 - Run the relevant Gradle build before merging a milestone; do not claim in-game validation unless it was performed.
+- Before publishing, push the target branch and its tags to `origin`, then verify that the default branch points to `1.20.1-fabric`.
 
 ## Regression checklist
 
