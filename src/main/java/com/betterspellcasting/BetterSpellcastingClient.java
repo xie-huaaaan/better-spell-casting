@@ -7,6 +7,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.OptionsScreen;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
@@ -30,6 +34,8 @@ public final class BetterSpellcastingClient {
         MinecraftForge.EVENT_BUS.addListener(BetterSpellcastingClient::onClientTick);
         MinecraftForge.EVENT_BUS.addListener(BetterSpellcastingClient::onOverlay);
         MinecraftForge.EVENT_BUS.addListener(BetterSpellcastingClient::onInteraction);
+        MinecraftForge.EVENT_BUS.addListener(BetterSpellcastingClient::onKey);
+        MinecraftForge.EVENT_BUS.addListener(BetterSpellcastingClient::onScreenInit);
     }
 
     private static void registerKeys(RegisterKeyMappingsEvent event) {
@@ -47,16 +53,22 @@ public final class BetterSpellcastingClient {
     public static ResourceLocation selectedSpell() { return SpellSelectionState.selected(); }
     public static KeyMapping castSelectedKey() { return castSelectedKey; }
 
-    public static void onKey(long window, int key, int scanCode, int action) {
+    private static void onKey(InputEvent.Key event) {
         Minecraft client = Minecraft.getInstance();
-        if (selectKey == null || window != client.getWindow().getWindow()
-                || !selectKey.matches(key, scanCode)) return;
+        if (selectKey == null || !selectKey.matches(event.getKey(), event.getScanCode())) return;
         if (client.screen != null) {
             selectionHeld = false;
             return;
         }
-        if (action == GLFW.GLFW_PRESS) beginSelection(client);
-        else if (action == GLFW.GLFW_RELEASE) endSelection(client);
+        if (event.getAction() == GLFW.GLFW_PRESS) beginSelection(client);
+        else if (event.getAction() == GLFW.GLFW_RELEASE) endSelection(client);
+    }
+
+    private static void onScreenInit(ScreenEvent.Init.Post event) {
+        if (!(event.getScreen() instanceof OptionsScreen optionsScreen)) return;
+        event.addListener(Button.builder(Component.translatable("screen.better-spell-casting.entry"),
+                        ignored -> Minecraft.getInstance().setScreen(new SpellcastingSettingsScreen(optionsScreen)))
+                .bounds(optionsScreen.width / 2 - 100, optionsScreen.height - 52, 200, 20).build());
     }
 
     private static void beginSelection(Minecraft client) {
