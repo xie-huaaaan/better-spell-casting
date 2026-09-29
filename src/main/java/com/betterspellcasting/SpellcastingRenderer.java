@@ -90,7 +90,10 @@ public final class SpellcastingRenderer {
                 }
             }
             if (SpellcastingController.spellId(slot).equals(SpellcastingController.hudSelectedSpell())) {
-                context.outline(sx - 1, y - 1, slotWidth + 2, slotHeight + 2, 0xFFF0C978);
+                context.fill(sx - 2, y - 2, sx + slotWidth + 2, y, 0xFFFFFFFF);
+                context.fill(sx - 2, y + slotHeight, sx + slotWidth + 2, y + slotHeight + 2, 0xFFFFFFFF);
+                context.fill(sx - 2, y, sx, y + slotHeight, 0xFFFFFFFF);
+                context.fill(sx + slotWidth, y, sx + slotWidth + 2, y + slotHeight, 0xFFFFFFFF);
             }
             if (showKeys && indexOffset + i < 9) {
                 KeyMappingLabel.draw(context, client, SpellcastingController.shortcutKey(client, indexOffset + i),
