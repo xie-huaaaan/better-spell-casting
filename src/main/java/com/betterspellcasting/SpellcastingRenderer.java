@@ -278,8 +278,11 @@ public final class SpellcastingRenderer {
     private static void renderDetails(DrawContext context, MinecraftClient client, Identifier spellId,
                                       int x, int y, int screenWidth, int screenHeight) {
         if (client.player == null) return;
-        List<Text> source = SpellTooltip.spellDescriptionWithDetails(spellId, client.player, ItemStack.EMPTY, 0);
-        List<Text> lines = source;
+        List<Text> titleEntries = SpellTooltip.spellEntry(spellId, client.player, ItemStack.EMPTY, true, 0);
+        List<Text> lines = new ArrayList<>();
+        titleEntries.stream().filter(line -> !line.getString().isBlank()).findFirst().ifPresent(lines::add);
+        SpellTooltip.spellDescriptionWithDetails(spellId, client.player, ItemStack.EMPTY, 0).stream()
+                .filter(line -> !line.getString().isBlank()).forEach(lines::add);
         int panelWidth = Math.min(250, screenWidth - x - 10);
         if (panelWidth < 150) {
             x = Math.max(8, Math.min(x - radiusForPanel(screenWidth), screenWidth - 158));

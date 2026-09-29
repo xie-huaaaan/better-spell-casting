@@ -6,6 +6,8 @@
   "client": [
     "KeyboardMixin",
     "MinecraftClientMixin",
+    "MinecraftUseDelayAccessor",
+    "OptionsScreenMixin",
     "SpellHotbarMixin",
     "SpellHotbarWidgetMixin"
   ],
