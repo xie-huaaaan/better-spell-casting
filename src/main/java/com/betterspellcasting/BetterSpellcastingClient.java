@@ -4,18 +4,9 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
-import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.option.OptionsScreen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextContent;
-import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
@@ -37,7 +28,6 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
                 GLFW.GLFW_MOUSE_BUTTON_RIGHT, "key.categories.better-spell-casting"));
         ClientTickEvents.END_CLIENT_TICK.register(BetterSpellcastingClient::tick);
         HudRenderCallback.EVENT.register(SpellcastingRenderer::render);
-        ScreenEvents.AFTER_INIT.register(BetterSpellcastingClient::addSettingsEntry);
     }
 
     public static SpellcastingConfig config() { return config == null ? new SpellcastingConfig() : config; }
@@ -104,58 +94,4 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
         SpellcastingController.refresh(MinecraftClient.getInstance());
     }
 
-    private static void addSettingsEntry(MinecraftClient client, Screen screen, int width, int height) {
-        if (!(screen instanceof OptionsScreen)) return;
-        ClickableWidget done = null;
-        for (ClickableWidget button : Screens.getButtons(screen)) {
-            TextContent content = button.getMessage().getContent();
-            if (content instanceof TranslatableTextContent translatable
-                    && translatable.getKey().equals("gui.done")) done = button;
-        }
-        if (done == null) return;
-        ClickableWidget doneButton = done;
-        var options = Screens.getButtons(screen).stream()
-                .filter(button -> button != doneButton && button.visible)
-                .sorted(java.util.Comparator.comparingInt(ClickableWidget::getY)
-                        .thenComparingInt(ClickableWidget::getX)).toList();
-        if (options.isEmpty()) return;
-        var rows = options.stream().map(ClickableWidget::getY).distinct().sorted().toList();
-        int rowStep = inferRowStep(rows, done.getY() - rows.get(rows.size() - 1));
-        var widths = options.stream().mapToInt(ClickableWidget::getWidth).sorted().toArray();
-        int cellWidth = widths.length == 0 ? done.getWidth() / 2 : widths[widths.length / 2];
-        int x = options.stream().mapToInt(ClickableWidget::getX).min().orElse(done.getX());
-        int y = done.getY();
-        int buttonWidth = cellWidth;
-        if (done.getY() + rowStep + done.getHeight() <= height - 4) {
-            done.setY(done.getY() + rowStep);
-        } else {
-            int rowY = rows.get(rows.size() - 1);
-            y = rowY;
-            int rowMaxX = options.stream().filter(button -> button.getY() == rowY)
-                    .mapToInt(ClickableWidget::getX).max().orElse(x);
-            x = rowMaxX + cellWidth + Math.max(0, rowMaxX - x - cellWidth);
-            if (x + cellWidth > width) {
-                int gridWidth = rowMaxX + cellWidth - options.stream()
-                        .mapToInt(ClickableWidget::getX).min().orElse(x);
-                x = (width - gridWidth) / 2;
-                y = Math.max(0, rows.get(0) - rowStep);
-                buttonWidth = gridWidth;
-            }
-        }
-        Screens.getButtons(screen).add(ButtonWidget.builder(Text.translatable("screen.better-spell-casting.entry"),
-                        ignored -> client.setScreen(new SpellcastingSettingsScreen(screen)))
-                .dimensions(x, y, buttonWidth, done.getHeight())
-                .tooltip(net.minecraft.client.gui.tooltip.Tooltip.of(
-                        Text.translatable("screen.better-spell-casting.entry.tooltip")))
-                .build());
-    }
-
-    private static int inferRowStep(java.util.List<Integer> rows, int doneGap) {
-        int step = doneGap;
-        for (int i = 1; i < rows.size(); i++) {
-            int gap = rows.get(i) - rows.get(i - 1);
-            if (gap > 0 && (step <= 0 || gap < step)) step = gap;
-        }
-        return Math.max(24, step);
-    }
 }

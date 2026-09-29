@@ -6,6 +6,7 @@
   "client": [
     "KeyboardMixin",
     "MinecraftClientMixin",
+    "OptionsScreenMixin",
     "SpellHotbarMixin",
     "SpellHotbarWidgetMixin"
   ],
