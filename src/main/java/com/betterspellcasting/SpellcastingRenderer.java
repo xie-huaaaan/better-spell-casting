@@ -6,10 +6,12 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BufferRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
@@ -34,7 +36,8 @@ public final class SpellcastingRenderer {
     private SpellcastingRenderer() {
     }
 
-    public static void render(DrawContext context, float tickDelta) {
+    public static void render(DrawContext context, RenderTickCounter tickCounter) {
+        float tickDelta = tickCounter.getTickDelta(true);
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.player == null || client.player.isSpectator() || client.currentScreen != null) {
             return;
@@ -199,8 +202,7 @@ public final class SpellcastingRenderer {
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableDepthTest();
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        BufferBuilder buffer = Tessellator.getInstance().getBuffer();
-        buffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         MatrixStack.Entry matrix = context.getMatrices().peek();
         int subdivisions = 16;
         for (int spell = 0; spell < count; spell++) {
@@ -221,7 +223,7 @@ public final class SpellcastingRenderer {
                 vertex(buffer, matrix, centerX + Math.cos(a0) * outerRadius, centerY + Math.sin(a0) * outerRadius, red, green, blue, alpha);
             }
         }
-        Tessellator.getInstance().draw();
+        BufferRenderer.drawWithGlobalProgram(buffer.end());
         drawRadialDividers(context, centerX, centerY, innerRadius, outerRadius, count);
         RenderSystem.disableBlend();
     }
@@ -248,15 +250,14 @@ public final class SpellcastingRenderer {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        BufferBuilder buffer = Tessellator.getInstance().getBuffer();
-        buffer.begin(VertexFormat.DrawMode.TRIANGLE_FAN, VertexFormats.POSITION_COLOR);
+        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_FAN, VertexFormats.POSITION_COLOR);
         MatrixStack.Entry matrix = context.getMatrices().peek();
         vertex(buffer, matrix, centerX, centerY, 18, 14, 10, 220);
         for (int i = 0; i <= 32; i++) {
             double angle = Math.PI * 2 * i / 32;
             vertex(buffer, matrix, centerX + Math.cos(angle) * radius, centerY + Math.sin(angle) * radius, 18, 14, 10, 220);
         }
-        Tessellator.getInstance().draw();
+        BufferRenderer.drawWithGlobalProgram(buffer.end());
         RenderSystem.disableBlend();
         context.fill(RenderLayer.getGuiOverlay(), centerX - 8, centerY, centerX + 8, centerY + 1, 0xD0E7D7C7);
         context.fill(RenderLayer.getGuiOverlay(), centerX, centerY - 8, centerX + 1, centerY + 8, 0xD0E7D7C7);
@@ -272,7 +273,7 @@ public final class SpellcastingRenderer {
 
     private static void vertex(BufferBuilder buffer, MatrixStack.Entry matrix, double x, double y,
                                int red, int green, int blue, int alpha) {
-        buffer.vertex(matrix.getPositionMatrix(), (float) x, (float) y, 0).color(red, green, blue, alpha).next();
+        buffer.vertex(matrix.getPositionMatrix(), (float) x, (float) y, 0).color(red, green, blue, alpha);
     }
 
     private static void renderDetails(DrawContext context, MinecraftClient client, Identifier spellId,
