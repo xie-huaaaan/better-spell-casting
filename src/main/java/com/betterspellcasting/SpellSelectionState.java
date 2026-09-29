@@ -14,7 +14,7 @@ public final class SpellSelectionState {
 
     public static void syncCandidates(List<Identifier> values) {
         candidates = List.copyOf(values);
-        // Java 25's immutable List implementation rejects null during contains/indexOf.
+        // Java 25's immutable List implementation rejects null in contains.
         if (selected == null || !candidates.contains(selected)) {
             selected = candidates.isEmpty() ? null : candidates.get(0);
         }

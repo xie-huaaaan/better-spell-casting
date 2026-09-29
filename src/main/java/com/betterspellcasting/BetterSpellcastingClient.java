@@ -147,6 +147,7 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
         int cellWidth = options.stream().mapToInt(ClickableWidget::getWidth).min().orElse(done.getWidth() / 2);
         int x = options.stream().mapToInt(ClickableWidget::getX).min().orElse(done.getX());
         int y = done.getY();
+        int buttonWidth = cellWidth;
         if (done.getY() + rowStep + done.getHeight() <= height - 4) {
             done.setY(done.getY() + rowStep);
         } else {
@@ -160,11 +161,12 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
                         .mapToInt(ClickableWidget::getX).min().orElse(x);
                 x = (width - gridWidth) / 2;
                 y = Math.max(0, rows.get(0) - rowStep);
+                buttonWidth = gridWidth;
             }
         }
         Screens.getButtons(screen).add(ButtonWidget.builder(Text.translatable("screen.better-spell-casting.entry"),
                         ignored -> client.setScreen(new SpellcastingSettingsScreen(screen)))
-                .dimensions(x, y, cellWidth, done.getHeight())
+                .dimensions(x, y, buttonWidth, done.getHeight())
                 .tooltip(net.minecraft.client.gui.tooltip.Tooltip.of(
                         Text.translatable("screen.better-spell-casting.entry.tooltip")))
                 .build());
