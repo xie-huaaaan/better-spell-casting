@@ -25,7 +25,6 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
     private static KeyBinding selectKey;
     private static KeyBinding castSelectedKey;
     private static boolean selectionHeld;
-    private static boolean selectionKeyDown;
 
     @Override
     public void onInitializeClient() {
@@ -52,15 +51,12 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
         if (selectKey == null || window != client.getWindow().getHandle()
                 || !selectKey.matchesKey(key, scanCode)) return;
         if (client.currentScreen != null) {
-            selectionKeyDown = false;
             selectionHeld = false;
             return;
         }
         if (action == GLFW.GLFW_PRESS) {
-            selectionKeyDown = true;
             beginSelection(client);
         } else if (action == GLFW.GLFW_RELEASE) {
-            selectionKeyDown = false;
             endSelection(client);
         }
     }
@@ -79,33 +75,14 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
         if (client.player != null) client.mouse.lockCursor();
     }
 
-    /** Polls the binding as a fallback for loaders that do not forward the GLFW callback to every mixin. */
-    private static void pollSelectionKey(MinecraftClient client) {
-        if (selectKey == null || client.currentScreen != null) {
-            selectionKeyDown = false;
-            selectionHeld = false;
-            return;
-        }
-        boolean down = selectKey.isPressed();
-        if (down && !selectionKeyDown) {
-            selectionKeyDown = true;
-            beginSelection(client);
-        } else if (!down && selectionKeyDown) {
-            selectionKeyDown = false;
-            endSelection(client);
-        }
-    }
-
     public static boolean shouldBlockUse(MinecraftClient client) {
         return selectionHeld && client.currentScreen == null;
     }
 
     private static void tick(MinecraftClient client) {
-        pollSelectionKey(client);
         if (client.player == null || client.world == null || client.currentScreen != null
                 || !client.player.isAlive()) {
             selectionHeld = false;
-            selectionKeyDown = false;
             BowInputController.stop(client);
         }
         SpellcastingController.refresh(client);
@@ -144,7 +121,8 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
         if (options.isEmpty()) return;
         var rows = options.stream().map(ClickableWidget::getY).distinct().sorted().toList();
         int rowStep = inferRowStep(rows, done.getY() - rows.get(rows.size() - 1));
-        int cellWidth = options.stream().mapToInt(ClickableWidget::getWidth).min().orElse(done.getWidth() / 2);
+        var widths = options.stream().mapToInt(ClickableWidget::getWidth).sorted().toArray();
+        int cellWidth = widths.length == 0 ? done.getWidth() / 2 : widths[widths.length / 2];
         int x = options.stream().mapToInt(ClickableWidget::getX).min().orElse(done.getX());
         int y = done.getY();
         int buttonWidth = cellWidth;
