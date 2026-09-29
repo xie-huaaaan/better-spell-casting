@@ -14,3 +14,4 @@ public enum HudStyle {
         return "option.better-spell-casting.hud." + name().toLowerCase(Locale.ROOT);
     }
 }
+

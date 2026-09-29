@@ -2,7 +2,7 @@ package com.betterspellcasting;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.fabricmc.loader.api.FabricLoader;
+import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -11,7 +11,7 @@ import java.nio.file.Path;
 
 public final class SpellcastingConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve("better-spell-casting.json");
+    private static final Path PATH = FMLPaths.CONFIGDIR.get().resolve("better-spell-casting.json");
     public boolean shortcutCasting = true;
     /** Enables the optional left-click bow/crossbow state machine. */
     public boolean bowLeftClick = false;
@@ -58,3 +58,4 @@ public final class SpellcastingConfig {
         }
     }
 }
+

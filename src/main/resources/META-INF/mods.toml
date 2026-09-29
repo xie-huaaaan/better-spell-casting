@@ -1,0 +1,33 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+issueTrackerURL="https://github.com/better-spell-casting/better-spell-casting/issues"
+
+[[mods]]
+modId="better_spell_casting"
+version="${version}"
+displayName="Better Spellcasting"
+authors="Better Spellcasting contributors"
+description='''Client-side enhancements for spell selection, casting controls, and HUDs.'''
+displayTest="IGNORE_ALL_VERSION"
+
+[[dependencies.better_spell_casting]]
+modId="forge"
+mandatory=true
+versionRange="[47.4,)"
+ordering="NONE"
+side="CLIENT"
+
+[[dependencies.better_spell_casting]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,1.21)"
+ordering="NONE"
+side="CLIENT"
+
+[[dependencies.better_spell_casting]]
+modId="spell_engine"
+mandatory=true
+versionRange="[1.10.7,)"
+ordering="AFTER"
+side="CLIENT"
