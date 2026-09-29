@@ -12,9 +12,10 @@
   },
   "mixins": ["better-spell-casting.mixins.json"],
   "depends": {
-    "minecraft": "${minecraft_version}",
+    "minecraft": ">=${minecraft_version}",
     "fabricloader": ">=${loader_version}",
-    "fabric": "*",
+    "fabric-api": "*",
+    "java": ">=25",
     "spell_engine": ">=${spell_engine_version}"
   }
 }

@@ -1,5 +1,6 @@
 plugins {
-    id 'fabric-loom' version "${loom_version}"
+    id 'dev.architectury.loom-no-remap' version "${loom_version}"
+    id 'architectury-plugin' version '3.5-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -15,22 +16,16 @@ repositories {
     maven { url = 'https://maven.terraformersmc.com/releases/' }
 }
 
-loom {
-    runs {
-        client {
-            client()
-            setConfigName('Fabric Client')
-            ideConfigGenerated(true)
-            runDir(providers.gradleProperty('run_dir').orElse('run').get())
-        }
-    }
+architectury {
+    minecraft = project.minecraft_version
+    platformSetupLoomIde()
+    fabric()
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    minecraft "net.minecraft:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     def spellEnginePath = providers.gradleProperty('spell_engine_jar').orNull
             ?: System.getenv('SPELL_ENGINE_JAR')
             ?: 'D:/projects/better-spell-casting/mc-version/.minecraft/versions/1.20.1-Fabric 0.19.5/mods/[法术引擎] spell_engine-fabric-1.10.7+1.20.1.jar'
@@ -38,7 +33,7 @@ dependencies {
     if (!spellEngineJar.isFile()) {
         throw new GradleException("Spell Engine JAR not found. Set -Pspell_engine_jar=<path> or SPELL_ENGINE_JAR.")
     }
-    modImplementation files(spellEngineJar)
+    implementation files(spellEngineJar)
     def tinyConfigJar = layout.buildDirectory.file('generated/dependencies/tiny-config.jar').get().asFile
     compileOnly files(tinyConfigJar)
     tasks.register('extractTinyConfig') {
@@ -60,9 +55,6 @@ dependencies {
     tasks.named('compileJava') { dependsOn('extractTinyConfig') }
 }
 
-tasks.named('remapSourcesJar') { dependsOn('extractTinyConfig') }
-tasks.named('remapJar') { dependsOn('extractTinyConfig') }
-
 processResources {
     inputs.property 'version', project.version
     inputs.property 'minecraft_version', project.minecraft_version
@@ -76,15 +68,15 @@ processResources {
     }
 }
 
-def targetJavaVersion = project.minecraft_version == '1.20.1' ? 17 : 21
+def targetJavaVersion = 25
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.release = targetJavaVersion
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
     withSourcesJar()
 }
 

@@ -1,23 +1,24 @@
 package com.betterspellcasting;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.SliderWidget;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.AbstractSliderButton;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
+/** Provides the client-only HUD and spell input options. */
 public final class SpellcastingSettingsScreen extends Screen {
     private final Screen parent;
     private final SpellcastingConfig draft;
-    private ButtonWidget shortcutButton;
-    private ButtonWidget bowLeftClickButton;
-    private ButtonWidget hudButton;
+    private Button shortcutButton;
+    private Button bowLeftClickButton;
+    private Button hudButton;
     private ScaleSlider scaleSlider;
     private int contentX;
     private int contentWidth;
 
     public SpellcastingSettingsScreen(Screen parent) {
-        super(Text.translatable("screen.better-spell-casting.title"));
+        super(Component.translatable("screen.better-spell-casting.title"));
         this.parent = parent;
         this.draft = BetterSpellcastingClient.config().copy();
     }
@@ -27,25 +28,24 @@ public final class SpellcastingSettingsScreen extends Screen {
         contentWidth = Math.min(320, width - 24);
         contentX = (width - contentWidth) / 2;
         int y = 44;
-        shortcutButton = addDrawableChild(ButtonWidget.builder(shortcutText(), button -> {
+        shortcutButton = addRenderableWidget(Button.builder(shortcutText(), button -> {
             draft.shortcutCasting = !draft.shortcutCasting;
             updateLabels();
-        }).dimensions(contentX, y, contentWidth, 20).build());
+        }).bounds(contentX, y, contentWidth, 20).build());
         y += 28;
-        bowLeftClickButton = addDrawableChild(ButtonWidget.builder(bowLeftClickText(), button -> {
+        bowLeftClickButton = addRenderableWidget(Button.builder(bowLeftClickText(), button -> {
             draft.bowLeftClick = !draft.bowLeftClick;
             updateLabels();
-        }).dimensions(contentX, y, contentWidth, 20).build());
+        }).bounds(contentX, y, contentWidth, 20).build());
         y += 28;
-        hudButton = addDrawableChild(ButtonWidget.builder(hudText(), button -> {
+        hudButton = addRenderableWidget(Button.builder(hudText(), button -> {
             draft.hudStyle = draft.hudStyle.next();
             updateLabels();
-        }).dimensions(contentX, y, contentWidth, 20).build());
+        }).bounds(contentX, y, contentWidth, 20).build());
         y += 28;
-        scaleSlider = addDrawableChild(new ScaleSlider(contentX, y, contentWidth, 20, draft.hudScale));
-
-        addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), button -> saveAndClose())
-                .dimensions(contentX, height - 28, contentWidth, 20).build());
+        scaleSlider = addRenderableWidget(new ScaleSlider(contentX, y, contentWidth, 20, draft.hudScale));
+        addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> saveAndClose())
+                .bounds(contentX, height - 28, contentWidth, 20).build());
         updateLabels();
     }
 
@@ -55,55 +55,52 @@ public final class SpellcastingSettingsScreen extends Screen {
         if (hudButton != null) hudButton.setMessage(hudText());
     }
 
-    private Text shortcutText() {
-        return Text.translatable("screen.better-spell-casting.shortcut", Text.translatable(draft.shortcutCasting ? "options.on" : "options.off"));
+    private Component shortcutText() {
+        return Component.translatable("screen.better-spell-casting.shortcut",
+                Component.translatable(draft.shortcutCasting ? "options.on" : "options.off"));
     }
 
-    private Text bowLeftClickText() {
-        return Text.translatable("screen.better-spell-casting.bow_left_click",
-                Text.translatable(draft.bowLeftClick ? "options.on" : "options.off"));
+    private Component bowLeftClickText() {
+        return Component.translatable("screen.better-spell-casting.bow_left_click",
+                Component.translatable(draft.bowLeftClick ? "options.on" : "options.off"));
     }
 
-    private Text hudText() {
-        return Text.translatable("screen.better-spell-casting.hud", Text.translatable(draft.hudStyle.translationKey()));
+    private Component hudText() {
+        return Component.translatable("screen.better-spell-casting.hud",
+                Component.translatable(draft.hudStyle.translationKey()));
     }
 
     private void saveAndClose() {
         if (scaleSlider != null) draft.hudScale = scaleSlider.scale();
         BetterSpellcastingClient.applyConfig(draft);
-        if (client != null) client.setScreen(parent);
+        if (minecraft != null) minecraft.setScreen(parent);
     }
 
     @Override
-    public void close() {
-        saveAndClose();
-    }
+    public void onClose() { saveAndClose(); }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context, mouseX, mouseY, delta);
-        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 16, 0xFFFFFF);
-        super.render(context, mouseX, mouseY, delta);
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        extractMenuBackground(context);
+        context.centeredText(font, title, width / 2, 16, 0xFFFFFFFF);
+        super.extractRenderState(context, mouseX, mouseY, delta);
     }
 
-    private final class ScaleSlider extends SliderWidget {
+    private final class ScaleSlider extends AbstractSliderButton {
         ScaleSlider(int x, int y, int width, int height, int scale) {
-            super(x, y, width, height, Text.empty(), (scale - 50) / 100.0);
+            super(x, y, width, height, Component.empty(), (scale - 50) / 100.0);
             updateMessage();
         }
 
-        int scale() {
-            return 50 + (int) Math.round(value * 100.0);
+        int scale() { return 50 + (int) Math.round(value * 100.0); }
+
+        @Override protected void updateMessage() {
+            setMessage(Component.translatable("screen.better-spell-casting.scale", scale() + "%"));
         }
 
-        @Override
-        protected void updateMessage() {
-            setMessage(Text.translatable("screen.better-spell-casting.scale", scale() + "%"));
-        }
-
-        @Override
-        protected void applyValue() {
+        @Override protected void applyValue() {
             value = Math.max(0.0, Math.min(1.0, value));
+            updateMessage();
         }
     }
 }
