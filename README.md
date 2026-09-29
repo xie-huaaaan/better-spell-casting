@@ -59,6 +59,3 @@ The repository branches correspond to the six supported targets listed in the in
 
 This project is intended to remain a client-only enhancement. It does not add a server protocol, register gameplay content, or take compile-time dependencies on Wizards, Paladins & Priests, Archers, Rogues & Warriors, or other content mods.
 
-## License
-
-See [LICENSE](LICENSE).
