@@ -7,10 +7,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.screens.OptionsScreen;
-import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
@@ -34,7 +30,6 @@ public final class BetterSpellcastingClient {
         MinecraftForge.EVENT_BUS.addListener(BetterSpellcastingClient::onOverlay);
         MinecraftForge.EVENT_BUS.addListener(BetterSpellcastingClient::onInteraction);
         MinecraftForge.EVENT_BUS.addListener(BetterSpellcastingClient::onKey);
-        MinecraftForge.EVENT_BUS.addListener(BetterSpellcastingClient::onScreenInit);
     }
 
     private static void registerKeys(RegisterKeyMappingsEvent event) {
@@ -61,31 +56,6 @@ public final class BetterSpellcastingClient {
         }
         if (event.getAction() == GLFW.GLFW_PRESS) beginSelection(client);
         else if (event.getAction() == GLFW.GLFW_RELEASE) endSelection(client);
-    }
-
-    private static void onScreenInit(ScreenEvent.Init.Post event) {
-        if (!(event.getScreen() instanceof OptionsScreen optionsScreen)) return;
-        Button done = null;
-        Button lastLeft = null;
-        int lastBottom = Integer.MIN_VALUE;
-        for (var listener : event.getListenersList()) {
-            if (!(listener instanceof Button button)) continue;
-            if (button.getMessage().getString().equals(Component.translatable("gui.done").getString())) {
-                done = button;
-                continue;
-            }
-            if (button.getX() < optionsScreen.width / 2 && button.getY() + button.getHeight() > lastBottom) {
-                lastLeft = button;
-                lastBottom = button.getY() + button.getHeight();
-            }
-        }
-        if (lastLeft == null) return;
-        int y = lastBottom + 4;
-        if (done != null) y = Math.min(y, done.getY() - lastLeft.getHeight() - 4);
-        Button entry = Button.builder(Component.translatable("screen.better-spell-casting.entry"),
-                        ignored -> Minecraft.getInstance().setScreen(new SpellcastingSettingsScreen(optionsScreen)))
-                .bounds(lastLeft.getX(), y, lastLeft.getWidth(), lastLeft.getHeight()).build();
-        event.addListener(entry);
     }
 
     private static void beginSelection(Minecraft client) {
@@ -121,6 +91,7 @@ public final class BetterSpellcastingClient {
         Minecraft client = Minecraft.getInstance();
         if (event.isAttack() && BowInputController.blocksAttack(client)) {
             event.setCanceled(true);
+            event.setSwingHand(false);
         } else if (event.isUseItem() && shouldBlockUse(client)) {
             event.setCanceled(true);
         }
