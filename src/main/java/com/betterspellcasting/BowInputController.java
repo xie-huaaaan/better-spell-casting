@@ -1,7 +1,7 @@
 package com.betterspellcasting;
 
+import com.betterspellcasting.mixin.MinecraftUseDelayAccessor;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.item.BowItem;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.Item;
@@ -11,8 +11,6 @@ import net.minecraft.util.Hand;
 public final class BowInputController {
     private static boolean leftButtonActive;
     private static boolean bypassSpellInput;
-    private static boolean observedUsingItem;
-    private static int restartDelay;
 
     private BowInputController() {
     }
@@ -46,34 +44,14 @@ public final class BowInputController {
             return;
         }
 
-        if (!leftButtonActive && client.options.attackKey.wasPressed()) {
+        if (!leftButtonActive) {
             leftButtonActive = true;
-            restartDelay = 0;
         }
-        if (!leftButtonActive) return;
-
-        if (client.player.isUsingItem()) {
-            observedUsingItem = true;
-            restartDelay = 0;
-            return;
-        }
-        if (observedUsingItem) {
-            observedUsingItem = false;
-            restartDelay = 2;
-            return;
-        }
-        if (restartDelay > 0) {
-            restartDelay--;
-            return;
-        }
-
-        var result = interactVanillaItem(client);
-        if (result.isAccepted() && client.player.isUsingItem()) {
-            observedUsingItem = true;
-        } else {
-            // Archers' auto-fire hook sets a two-tick item-use cooldown after releasing a shot.
-            restartDelay = 2;
-        }
+        if (client.player.isUsingItem()) return;
+        MinecraftUseDelayAccessor useDelay = (MinecraftUseDelayAccessor) client;
+        if (useDelay.betterSpellcasting$getUseDelay() > 0) return;
+        useDelay.betterSpellcasting$setUseDelay(4);
+        interactVanillaItem(client);
     }
 
     public static void stop(MinecraftClient client) {
@@ -82,8 +60,6 @@ public final class BowInputController {
             client.interactionManager.stopUsingItem(client.player);
         }
         leftButtonActive = false;
-        observedUsingItem = false;
-        restartDelay = 0;
     }
 
     public static boolean blocksAttack(MinecraftClient client) {
@@ -95,10 +71,10 @@ public final class BowInputController {
     }
 
     /** Prevents Spell Engine's right-click arbitration from consuming the bow use call. */
-    private static net.minecraft.util.ActionResult interactVanillaItem(MinecraftClient client) {
+    private static void interactVanillaItem(MinecraftClient client) {
         bypassSpellInput = true;
         try {
-            return client.interactionManager.interactItem(client.player, Hand.MAIN_HAND);
+            client.interactionManager.interactItem(client.player, Hand.MAIN_HAND);
         } finally {
             bypassSpellInput = false;
         }
