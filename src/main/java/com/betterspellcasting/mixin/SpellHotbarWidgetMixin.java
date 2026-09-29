@@ -14,8 +14,7 @@ public abstract class SpellHotbarWidgetMixin {
     private static void betterSpellcasting$hideOriginal(DrawContext context, int screenWidth, int screenHeight,
                                                        HudRenderHelper.SpellHotBarWidget.ViewModel viewModel,
                                                        CallbackInfo ci) {
-        if (BetterSpellcastingClient.isWheelMode()
-                && !com.betterspellcasting.SpellcastingController.castSlots().isEmpty()) {
+        if (!com.betterspellcasting.SpellcastingController.castSlots().isEmpty()) {
             ci.cancel();
         }
     }

@@ -18,8 +18,7 @@ public final class BowInputController {
     }
 
     public static boolean enabled(MinecraftClient client) {
-        return (BetterSpellcastingClient.isWheelMode() || BetterSpellcastingClient.isCycleMode())
-                && BetterSpellcastingClient.config().bowLeftClick
+        return BetterSpellcastingClient.config().bowLeftClick
                 && client != null
                 && client.currentScreen == null
                 && client.world != null

@@ -9,15 +9,12 @@ import net.minecraft.text.Text;
 public final class SpellcastingSettingsScreen extends Screen {
     private final Screen parent;
     private final SpellcastingConfig draft;
-    private ButtonWidget modeButton;
     private ButtonWidget shortcutButton;
-    private ButtonWidget reverseButton;
     private ButtonWidget bowLeftClickButton;
     private ButtonWidget hudButton;
     private ScaleSlider scaleSlider;
     private int contentX;
     private int contentWidth;
-    private int descriptionY;
 
     public SpellcastingSettingsScreen(Screen parent) {
         super(Text.translatable("screen.better-spell-casting.title"));
@@ -30,36 +27,16 @@ public final class SpellcastingSettingsScreen extends Screen {
         contentWidth = Math.min(320, width - 24);
         contentX = (width - contentWidth) / 2;
         int y = 44;
-        modeButton = addDrawableChild(ButtonWidget.builder(modeText(), button -> {
-            draft.mode = draft.mode.next();
-            clearAndInit();
+        shortcutButton = addDrawableChild(ButtonWidget.builder(shortcutText(), button -> {
+            draft.shortcutCasting = !draft.shortcutCasting;
+            updateLabels();
         }).dimensions(contentX, y, contentWidth, 20).build());
-
-        descriptionY = y + 28;
-        int descriptionHeight = textRenderer.wrapLines(modeDescription(), contentWidth).size() * 10;
-        y = descriptionY + descriptionHeight + 8;
-
-        if (draft.mode != CastingMode.ORIGINAL) {
-            shortcutButton = addDrawableChild(ButtonWidget.builder(shortcutText(), button -> {
-                draft.shortcutCasting = !draft.shortcutCasting;
-                updateLabels();
-            }).dimensions(contentX, y, contentWidth, 20).build());
-            y += 28;
-        }
-        if (draft.mode == CastingMode.CYCLE) {
-            reverseButton = addDrawableChild(ButtonWidget.builder(reverseText(), button -> {
-                draft.reverseScroll = !draft.reverseScroll;
-                updateLabels();
-            }).dimensions(contentX, y, contentWidth, 20).build());
-            y += 28;
-        }
-        if (draft.mode == CastingMode.WHEEL || draft.mode == CastingMode.CYCLE) {
-            bowLeftClickButton = addDrawableChild(ButtonWidget.builder(bowLeftClickText(), button -> {
-                draft.bowLeftClick = !draft.bowLeftClick;
-                updateLabels();
-            }).dimensions(contentX, y, contentWidth, 20).build());
-            y += 28;
-        }
+        y += 28;
+        bowLeftClickButton = addDrawableChild(ButtonWidget.builder(bowLeftClickText(), button -> {
+            draft.bowLeftClick = !draft.bowLeftClick;
+            updateLabels();
+        }).dimensions(contentX, y, contentWidth, 20).build());
+        y += 28;
         hudButton = addDrawableChild(ButtonWidget.builder(hudText(), button -> {
             draft.hudStyle = draft.hudStyle.next();
             updateLabels();
@@ -73,27 +50,13 @@ public final class SpellcastingSettingsScreen extends Screen {
     }
 
     private void updateLabels() {
-        if (modeButton != null) modeButton.setMessage(modeText());
         if (shortcutButton != null) shortcutButton.setMessage(shortcutText());
-        if (reverseButton != null) reverseButton.setMessage(reverseText());
         if (bowLeftClickButton != null) bowLeftClickButton.setMessage(bowLeftClickText());
         if (hudButton != null) hudButton.setMessage(hudText());
     }
 
-    private Text modeText() {
-        return Text.translatable("screen.better-spell-casting.mode", Text.translatable(draft.mode.translationKey()));
-    }
-
-    private Text modeDescription() {
-        return Text.translatable(draft.mode.descriptionKey());
-    }
-
     private Text shortcutText() {
         return Text.translatable("screen.better-spell-casting.shortcut", Text.translatable(draft.shortcutCasting ? "options.on" : "options.off"));
-    }
-
-    private Text reverseText() {
-        return Text.translatable("screen.better-spell-casting.reverse_scroll", Text.translatable(draft.reverseScroll ? "options.on" : "options.off"));
     }
 
     private Text bowLeftClickText() {
@@ -120,11 +83,6 @@ public final class SpellcastingSettingsScreen extends Screen {
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         renderBackground(context);
         context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 16, 0xFFFFFF);
-        int y = descriptionY;
-        for (var line : textRenderer.wrapLines(modeDescription(), contentWidth)) {
-            context.drawTextWithShadow(textRenderer, line, contentX, y, 0xAAAAAA);
-            y += 10;
-        }
         super.render(context, mouseX, mouseY, delta);
     }
 

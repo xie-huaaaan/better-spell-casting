@@ -43,10 +43,6 @@ public final class SpellcastingController {
         return slot == null || slot.option() == null ? null : slot.option().id();
     }
 
-    public static boolean hasSpells() {
-        return !castSlots().isEmpty();
-    }
-
     public static void ensureSelection() {
         List<SpellHotbar.Slot> slots = castSlots();
         if (slots.isEmpty()) {
@@ -69,10 +65,6 @@ public final class SpellcastingController {
     public static void confirmSelection(MinecraftClient client) {
         refresh(client);
         routeHotbar(client);
-    }
-
-    public static void stepSelection(int delta) {
-        if (SpellSelectionState.step(delta)) routeHotbar(MinecraftClient.getInstance());
     }
 
     public static int selectedIndex() {
@@ -108,10 +100,6 @@ public final class SpellcastingController {
     }
 
     public static void routeHotbar(MinecraftClient client) {
-        if (BetterSpellcastingClient.config().mode == CastingMode.ORIGINAL) {
-            resetInputOwner();
-            return;
-        }
         if (client.player == null) {
             resetInputOwner();
             return;
@@ -266,9 +254,7 @@ public final class SpellcastingController {
     }
 
     public static void beginHandle(List<SpellHotbar.Slot> slots) {
-        if (BetterSpellcastingClient.config().mode == CastingMode.ORIGINAL) {
-            inputPass = InputPass.NONE;
-        } else if (slots == SpellHotbar.INSTANCE.slots) {
+        if (slots == SpellHotbar.INSTANCE.slots) {
             inputPass = InputPass.FULL;
         } else if (slots == SpellHotbar.INSTANCE.structuredSlots.other()) {
             inputPass = InputPass.SHORTCUT;

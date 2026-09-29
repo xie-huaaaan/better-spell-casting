@@ -102,7 +102,7 @@ public final class SpellcastingRenderer {
 
     private static boolean showShortcutLabels() {
         SpellcastingConfig config = BetterSpellcastingClient.config();
-        return config.mode == CastingMode.ORIGINAL || config.shortcutCasting;
+        return config.shortcutCasting;
     }
 
     private static void drawHotbarBackground(DrawContext context, float x, float y, int count) {

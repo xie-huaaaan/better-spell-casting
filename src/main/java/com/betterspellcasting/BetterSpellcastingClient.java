@@ -8,7 +8,7 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.option.ControlsOptionsScreen;
+import net.minecraft.client.gui.screen.option.OptionsScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.option.KeyBinding;
@@ -19,9 +19,8 @@ import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
-/** Owns Better Spellcasting's client lifecycle, input bindings, and mode state. */
+/** Owns Better Spellcasting's client lifecycle, input bindings, and selection state. */
 public final class BetterSpellcastingClient implements ClientModInitializer {
-    public static final String MOD_ID = "better-spell-casting";
     private static SpellcastingConfig config;
     private static KeyBinding selectKey;
     private static KeyBinding castSelectedKey;
@@ -43,13 +42,8 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
     }
 
     public static SpellcastingConfig config() { return config == null ? new SpellcastingConfig() : config; }
-    public static boolean isWheelMode() { return config().mode == CastingMode.WHEEL; }
-    public static boolean isCycleMode() { return config().mode == CastingMode.CYCLE; }
-    public static boolean isShortcutCastingEnabled() {
-        return config().mode == CastingMode.ORIGINAL || config().shortcutCasting;
-    }
-    public static boolean isWheelOpen() { return selectionHeld && isWheelMode(); }
-    public static boolean isSelectionHeld() { return selectionHeld; }
+    public static boolean isShortcutCastingEnabled() { return config().shortcutCasting; }
+    public static boolean isWheelOpen() { return selectionHeld; }
     public static Identifier selectedSpell() { return SpellSelectionState.selected(); }
     public static KeyBinding castSelectedKey() { return castSelectedKey; }
 
@@ -75,7 +69,7 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
         if (selectionHeld) return;
         selectionHeld = true;
         SpellcastingController.ensureSelection();
-        if (isWheelMode()) client.mouse.unlockCursor();
+        client.mouse.unlockCursor();
     }
 
     private static void endSelection(MinecraftClient client) {
@@ -102,14 +96,6 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
         }
     }
 
-    public static boolean onScroll(double horizontal, double vertical) {
-        if (!isCycleMode() || !selectionHeld || vertical == 0) return false;
-        int direction = vertical < 0 ? 1 : -1;
-        if (config().reverseScroll) direction = -direction;
-        SpellcastingController.stepSelection(direction);
-        return true;
-    }
-
     public static boolean shouldBlockUse(MinecraftClient client) {
         return selectionHeld && client.currentScreen == null;
     }
@@ -123,7 +109,7 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
             BowInputController.stop(client);
         }
         SpellcastingController.refresh(client);
-        if (isWheelMode() && selectionHeld) SpellcastingController.updateSelection(client);
+        if (selectionHeld) SpellcastingController.updateSelection(client);
         SpellcastingController.routeHotbar(client);
     }
 
@@ -142,39 +128,54 @@ public final class BetterSpellcastingClient implements ClientModInitializer {
     }
 
     private static void addSettingsEntry(MinecraftClient client, Screen screen, int width, int height) {
-        if (!(screen instanceof ControlsOptionsScreen)) return;
-        ClickableWidget old = null;
+        if (!(screen instanceof OptionsScreen)) return;
         ClickableWidget done = null;
         for (ClickableWidget button : Screens.getButtons(screen)) {
             TextContent content = button.getMessage().getContent();
             if (content instanceof TranslatableTextContent translatable
-                    && translatable.getKey().equals("screen.spell_cycle.entry")) old = button;
-            if (content instanceof TranslatableTextContent translatable
                     && translatable.getKey().equals("gui.done")) done = button;
         }
-        if (old != null) { old.visible = false; old.active = false; }
-        if (done == null && old == null) return;
-        ClickableWidget anchor = done != null ? done : old;
-        int x = anchor.getX();
-        int y = done != null ? Math.max(0, done.getY() - 24) : old.getY();
-        int w = anchor.getWidth();
-        while (y > 0 && overlapsVisibleButton(screen, old, x, y, w, 20)) y--;
+        if (done == null) return;
+        ClickableWidget doneButton = done;
+        var options = Screens.getButtons(screen).stream()
+                .filter(button -> button != doneButton && button.visible)
+                .sorted(java.util.Comparator.comparingInt(ClickableWidget::getY)
+                        .thenComparingInt(ClickableWidget::getX)).toList();
+        if (options.isEmpty()) return;
+        var rows = options.stream().map(ClickableWidget::getY).distinct().sorted().toList();
+        int rowStep = inferRowStep(rows, done.getY() - rows.get(rows.size() - 1));
+        int cellWidth = options.stream().mapToInt(ClickableWidget::getWidth).min().orElse(done.getWidth() / 2);
+        int x = options.stream().mapToInt(ClickableWidget::getX).min().orElse(done.getX());
+        int y = done.getY();
+        if (done.getY() + rowStep + done.getHeight() <= height - 4) {
+            done.setY(done.getY() + rowStep);
+        } else {
+            int rowY = rows.get(rows.size() - 1);
+            y = rowY;
+            int rowMaxX = options.stream().filter(button -> button.getY() == rowY)
+                    .mapToInt(ClickableWidget::getX).max().orElse(x);
+            x = rowMaxX + cellWidth + Math.max(0, rowMaxX - x - cellWidth);
+            if (x + cellWidth > width) {
+                int gridWidth = rowMaxX + cellWidth - options.stream()
+                        .mapToInt(ClickableWidget::getX).min().orElse(x);
+                x = (width - gridWidth) / 2;
+                y = Math.max(0, rows.get(0) - rowStep);
+            }
+        }
         Screens.getButtons(screen).add(ButtonWidget.builder(Text.translatable("screen.better-spell-casting.entry"),
                         ignored -> client.setScreen(new SpellcastingSettingsScreen(screen)))
-                .dimensions(x, y, w, 20)
+                .dimensions(x, y, cellWidth, done.getHeight())
                 .tooltip(net.minecraft.client.gui.tooltip.Tooltip.of(
                         Text.translatable("screen.better-spell-casting.entry.tooltip")))
                 .build());
     }
 
-    private static boolean overlapsVisibleButton(Screen screen, ClickableWidget ignored,
-                                                   int x, int y, int width, int height) {
-        for (ClickableWidget button : Screens.getButtons(screen)) {
-            if (button == ignored || !button.visible) continue;
-            boolean separated = x + width <= button.getX() || button.getX() + button.getWidth() <= x
-                    || y + height <= button.getY() || button.getY() + button.getHeight() <= y;
-            if (!separated) return true;
+    private static int inferRowStep(java.util.List<Integer> rows, int doneGap) {
+        int step = doneGap;
+        for (int i = 1; i < rows.size(); i++) {
+            int gap = rows.get(i) - rows.get(i - 1);
+            if (gap > 0 && (step <= 0 || gap < step)) step = gap;
         }
-        return false;
+        return Math.max(24, step);
     }
 }
