@@ -7,15 +7,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.ModLoadingContext;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.screens.options.OptionsScreen;
-import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
 /** Owns the Forge client lifecycle, input bindings, and shared selection state. */
@@ -33,7 +29,6 @@ public final class BetterSpellcastingClient {
         NeoForge.EVENT_BUS.addListener(BetterSpellcastingClient::onClientTick);
         NeoForge.EVENT_BUS.addListener(BetterSpellcastingClient::onOverlay);
         NeoForge.EVENT_BUS.addListener(BetterSpellcastingClient::onInteraction);
-        NeoForge.EVENT_BUS.addListener(BetterSpellcastingClient::onScreenInit);
         NeoForge.EVENT_BUS.addListener(BetterSpellcastingClient::onKeyInput);
     }
 
@@ -96,6 +91,7 @@ public final class BetterSpellcastingClient {
         Minecraft client = Minecraft.getInstance();
         if (event.isAttack() && BowInputController.blocksAttack(client)) {
             event.setCanceled(true);
+            event.setSwingHand(false);
         } else if (event.isUseItem() && shouldBlockUse(client)) {
             event.setCanceled(true);
         }
@@ -103,32 +99,6 @@ public final class BetterSpellcastingClient {
 
     private static void onKeyInput(InputEvent.Key event) {
         onKey(Minecraft.getInstance().getWindow().getWindow(), event.getKey(), event.getScanCode(), event.getAction());
-    }
-
-    private static void onScreenInit(ScreenEvent.Init.Post event) {
-        if (!(event.getScreen() instanceof OptionsScreen screen)) return;
-        Button done = null;
-        Button lastLeft = null;
-        int lastBottom = Integer.MIN_VALUE;
-        for (var listener : event.getListenersList()) {
-            if (!(listener instanceof Button button)) continue;
-            if (button.getMessage().getString().equals(Component.translatable("gui.done").getString())) {
-                done = button;
-                continue;
-            }
-            if (button.getX() < screen.width / 2 && button.getY() + button.getHeight() > lastBottom) {
-                lastLeft = button;
-                lastBottom = button.getY() + button.getHeight();
-            }
-        }
-        if (lastLeft == null) return;
-        int y = lastBottom + 4;
-        if (done != null) y = Math.min(y, done.getY() - lastLeft.getHeight() - 4);
-        Button entry = Button.builder(Component.translatable("screen.better-spell-casting.entry"),
-                        ignored -> Minecraft.getInstance().setScreen(new SpellcastingSettingsScreen(screen)))
-                .bounds(lastLeft.getX(), y, lastLeft.getWidth(), lastLeft.getHeight())
-                .build();
-        event.addListener(entry);
     }
 
     private static void tick(Minecraft client) {

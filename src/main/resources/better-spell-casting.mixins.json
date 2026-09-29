@@ -4,6 +4,8 @@
   "package": "com.betterspellcasting.mixin",
   "compatibilityLevel": "JAVA_17",
   "client": [
+    "MinecraftAttackMixin",
+    "OptionsScreenMixin",
     "SpellHotbarMixin",
     "SpellHotbarWidgetMixin"
   ],
