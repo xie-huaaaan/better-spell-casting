@@ -1,11 +1,11 @@
 package com.betterspellcasting;
 
 import com.betterspellcasting.mixin.MinecraftUseDelayAccessor;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.item.BowItem;
-import net.minecraft.item.CrossbowItem;
-import net.minecraft.item.Item;
-import net.minecraft.util.Hand;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.InteractionHand;
 
 /** Keeps vanilla bow and crossbow use semantics while moving their button to attack. */
 public final class BowInputController {
@@ -15,31 +15,31 @@ public final class BowInputController {
     private BowInputController() {
     }
 
-    public static boolean enabled(MinecraftClient client) {
+    public static boolean enabled(Minecraft client) {
         return BetterSpellcastingClient.config().bowLeftClick
                 && client != null
-                && client.currentScreen == null
-                && client.world != null
+                && client.screen == null
+                && client.level != null
                 && client.player != null
                 && client.player.isAlive()
-                && isRangedWeapon(client.player.getMainHandStack().getItem());
+                && isRangedWeapon(client.player.getMainHandItem().getItem());
     }
 
     public static boolean isRangedWeapon(Item item) {
         return item instanceof BowItem || item instanceof CrossbowItem;
     }
 
-    public static void tick(MinecraftClient client) {
+    public static void tick(Minecraft client) {
         if (!enabled(client)) {
             stop(client);
             return;
         }
 
-        if (client.interactionManager == null) {
+        if (client.gameMode == null) {
             stop(client);
             return;
         }
-        if (!client.options.attackKey.isPressed()) {
+        if (!client.options.keyAttack.isDown()) {
             stop(client);
             return;
         }
@@ -54,27 +54,27 @@ public final class BowInputController {
         interactVanillaItem(client);
     }
 
-    public static void stop(MinecraftClient client) {
-        if (leftButtonActive && client != null && client.interactionManager != null && client.player != null
+    public static void stop(Minecraft client) {
+        if (leftButtonActive && client != null && client.gameMode != null && client.player != null
                 && client.player.isUsingItem()) {
-            client.interactionManager.stopUsingItem(client.player);
+            client.player.stopUsingItem();
         }
         leftButtonActive = false;
     }
 
-    public static boolean blocksAttack(MinecraftClient client) {
+    public static boolean blocksAttack(Minecraft client) {
         return enabled(client);
     }
 
-    public static boolean suppressVanillaStop(MinecraftClient client) {
-        return leftButtonActive && enabled(client) && client.options.attackKey.isPressed();
+    public static boolean suppressVanillaStop(Minecraft client) {
+        return leftButtonActive && enabled(client) && client.options.keyAttack.isDown();
     }
 
     /** Prevents Spell Engine's right-click arbitration from consuming the bow use call. */
-    private static void interactVanillaItem(MinecraftClient client) {
+    private static void interactVanillaItem(Minecraft client) {
         bypassSpellInput = true;
         try {
-            client.interactionManager.interactItem(client.player, Hand.MAIN_HAND);
+            client.gameMode.useItem(client.player, InteractionHand.MAIN_HAND);
         } finally {
             bypassSpellInput = false;
         }
@@ -84,3 +84,4 @@ public final class BowInputController {
         return bypassSpellInput;
     }
 }
+

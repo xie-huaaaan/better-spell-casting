@@ -1,44 +1,47 @@
 plugins {
-    id 'fabric-loom' version "${loom_version}"
+    id 'eclipse'
+    id 'idea'
     id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'org.spongepowered.mixin' version '0.7-SNAPSHOT'
 }
 
 version = "${project.mod_version}+${project.minecraft_version}"
 group = project.maven_group
 
-base {
-    archivesName = project.archives_base_name
-}
+base { archivesName = project.archives_base_name }
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 repositories {
-    maven { url = 'https://maven.fabricmc.net/' }
-    maven { url = 'https://maven.terraformersmc.com/releases/' }
+    maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+    mavenCentral()
 }
 
-loom {
+minecraft {
+    mappings channel: 'official', version: project.minecraft_version
+    copyIdeResources = true
     runs {
-        client {
-            client()
-            setConfigName('Fabric Client')
-            ideConfigGenerated(true)
-            runDir(providers.gradleProperty('run_dir').orElse('run').get())
+        configureEach {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            mods { better_spell_casting { source sourceSets.main } }
         }
+        client { args '--username', 'Dev' }
     }
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    minecraft "net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}"
     def spellEnginePath = providers.gradleProperty('spell_engine_jar').orNull
             ?: System.getenv('SPELL_ENGINE_JAR')
-            ?: 'D:/projects/better-spell-casting/mc-version/.minecraft/versions/1.20.1-Fabric 0.19.5/mods/[法术引擎] spell_engine-fabric-1.10.7+1.20.1.jar'
+            ?: 'D:/projects/better-spell-casting/mc-version/.minecraft/versions/1.20.1-Forge_47.4.23/mods/[法术引擎] spell_engine-forge-1.10.7+1.20.1.jar'
     def spellEngineJar = file(spellEnginePath)
-    if (!spellEngineJar.isFile()) {
-        throw new GradleException("Spell Engine JAR not found. Set -Pspell_engine_jar=<path> or SPELL_ENGINE_JAR.")
-    }
-    modImplementation files(spellEngineJar)
+    if (!spellEngineJar.isFile()) throw new GradleException("Spell Engine JAR not found: $spellEnginePath")
+    implementation files(spellEngineJar)
+    runtimeOnly files(spellEngineJar)
+    compileOnly 'org.spongepowered:mixin:0.8.5'
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     def tinyConfigJar = layout.buildDirectory.file('generated/dependencies/tiny-config.jar').get().asFile
     compileOnly files(tinyConfigJar)
     tasks.register('extractTinyConfig') {
@@ -47,43 +50,45 @@ dependencies {
         doLast {
             tinyConfigJar.parentFile.mkdirs()
             new java.util.zip.ZipFile(spellEngineJar).withCloseable { zip ->
-                def entry = zip.entries().find { it.name.toLowerCase(Locale.ROOT).startsWith('meta-inf/jars/')
-                        && it.name.toLowerCase(Locale.ROOT).contains('tiny-config')
-                        && it.name.toLowerCase(Locale.ROOT).endsWith('.jar') }
+                def entry = zip.entries().find { it.name.toLowerCase(Locale.ROOT).startsWith('meta-inf/jars/') && it.name.toLowerCase(Locale.ROOT).contains('tiny-config') && it.name.toLowerCase(Locale.ROOT).endsWith('.jar') }
                 if (entry == null) throw new GradleException("TinyConfig was not found in $spellEngineJar")
-                zip.getInputStream(entry).withCloseable { input ->
-                    tinyConfigJar.withOutputStream { output -> input.transferTo(output) }
-                }
+                zip.getInputStream(entry).withCloseable { input -> tinyConfigJar.withOutputStream { output -> input.transferTo(output) } }
             }
         }
     }
     tasks.named('compileJava') { dependsOn('extractTinyConfig') }
 }
 
-tasks.named('remapSourcesJar') { dependsOn('extractTinyConfig') }
-tasks.named('remapJar') { dependsOn('extractTinyConfig') }
+mixin {
+    add sourceSets.main, "better-spell-casting.refmap.json"
+    config "better-spell-casting.mixins.json"
+}
 
 processResources {
     inputs.property 'version', project.version
-    filesMatching('fabric.mod.json') {
-        expand 'version': project.version
-    }
+    filesMatching('META-INF/mods.toml') { expand 'version': project.version }
 }
 
-def targetJavaVersion = 17
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-    options.release = targetJavaVersion
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-    withSourcesJar()
+    options.release = 17
 }
 
 jar {
-    from('LICENSE') {
-        rename { "${it}_${project.archives_base_name}" }
+    manifest {
+        attributes([
+                'Specification-Title': 'better-spell-casting',
+                'Specification-Vendor': 'Better Spellcasting contributors',
+                'Specification-Version': '1',
+                'Implementation-Title': project.name,
+                'Implementation-Version': project.version,
+                'Implementation-Vendor': 'Better Spellcasting contributors',
+                'MixinConfigs': 'better-spell-casting.mixins.json'
+        ])
     }
+    from('LICENSE') { rename { "${it}_${project.archives_base_name}" } }
+}
+
+publishing {
+    publications { mavenJava(MavenPublication) { from components.java } }
 }

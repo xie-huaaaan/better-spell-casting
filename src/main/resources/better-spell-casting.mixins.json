@@ -2,10 +2,10 @@
   "required": true,
   "minVersion": "0.8",
   "package": "com.betterspellcasting.mixin",
+  "refmap": "better-spell-casting.refmap.json",
   "compatibilityLevel": "JAVA_17",
   "client": [
     "KeyboardMixin",
-    "MinecraftClientMixin",
     "MinecraftUseDelayAccessor",
     "OptionsScreenMixin",
     "SpellHotbarMixin",
