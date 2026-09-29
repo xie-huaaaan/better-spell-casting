@@ -59,6 +59,3 @@ $env:JAVA_HOME = 'C:\Program Files\Zulu\zulu-25'
 
 本项目定位为客户端增强模组，不添加服务器协议、游戏内容或新的玩法数据，也不会在编译期依赖 Wizards、Paladins & Priests、Archers、Rogues & Warriors 等内容模组。
 
-## 许可证
-
-详见 [LICENSE](LICENSE)。
