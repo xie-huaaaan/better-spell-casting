@@ -24,7 +24,7 @@ side="CLIENT"
 [[dependencies.better_spell_casting]]
 modId="minecraft"
 type="required"
-versionRange="[26.1.2,26.2)"
+versionRange="[26.1,26.2)"
 ordering="NONE"
 side="CLIENT"
 
