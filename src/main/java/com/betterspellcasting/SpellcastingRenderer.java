@@ -280,7 +280,7 @@ public final class SpellcastingRenderer {
                                       int x, int y, int screenWidth, int screenHeight) {
         if (client.player == null) return;
         List<Text> source = SpellTooltip.spellEntry(spellId, client.player, ItemStack.EMPTY, true, 0);
-        List<Text> lines = source;
+        List<Text> lines = source.stream().filter(line -> !line.getString().isBlank()).toList();
         int panelWidth = Math.min(250, screenWidth - x - 10);
         if (panelWidth < 150) {
             x = Math.max(8, Math.min(x - radiusForPanel(screenWidth), screenWidth - 158));
