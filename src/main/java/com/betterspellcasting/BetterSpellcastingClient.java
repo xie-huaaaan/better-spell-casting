@@ -107,11 +107,27 @@ public final class BetterSpellcastingClient {
 
     private static void onScreenInit(ScreenEvent.Init.Post event) {
         if (!(event.getScreen() instanceof OptionsScreen screen)) return;
+        Button done = null;
+        Button lastLeft = null;
+        int lastBottom = Integer.MIN_VALUE;
+        for (var listener : event.getListenersList()) {
+            if (!(listener instanceof Button button)) continue;
+            if (button.getMessage().getString().equals(Component.translatable("gui.done").getString())) {
+                done = button;
+                continue;
+            }
+            if (button.getX() < screen.width / 2 && button.getY() + button.getHeight() > lastBottom) {
+                lastLeft = button;
+                lastBottom = button.getY() + button.getHeight();
+            }
+        }
+        if (lastLeft == null) return;
+        int y = lastBottom + 4;
+        if (done != null) y = Math.min(y, done.getY() - lastLeft.getHeight() - 4);
         Button entry = Button.builder(Component.translatable("screen.better-spell-casting.entry"),
                         ignored -> Minecraft.getInstance().setScreen(new SpellcastingSettingsScreen(screen)))
-                .bounds(screen.width / 2 - 100, screen.height - 52, 200, 20)
+                .bounds(lastLeft.getX(), y, lastLeft.getWidth(), lastLeft.getHeight())
                 .build();
-        screen.renderables.add(entry);
         event.addListener(entry);
     }
 
@@ -120,6 +136,7 @@ public final class BetterSpellcastingClient {
             selectionHeld = false;
             BowInputController.stop(client);
         }
+        BowInputController.tick(client);
         SpellcastingController.refresh(client);
         if (selectionHeld) SpellcastingController.updateSelection(client);
         SpellcastingController.routeHotbar(client);
