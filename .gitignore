@@ -25,3 +25,8 @@ mc-version/
 /spell_engine.mixins.json
 /architectury_inject_spell_engine_common_*/
 
+# JVM crash and heap diagnostics written beside the launched process.
+hs_err_pid*.log
+replay_pid*.log
+*.hprof
+
