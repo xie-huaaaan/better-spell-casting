@@ -208,7 +208,9 @@ public final class SpellcastingRenderer {
         List<Component> source = SpellTooltip.spellEntry(spellId, client.player, ItemStack.EMPTY, true, 0);
         int panelWidth = Math.min(250, Math.max(150, screenWidth - x - 8));
         List<net.minecraft.util.FormattedCharSequence> wrapped = new ArrayList<>();
-        for (Component line : source) wrapped.addAll(client.font.split(line, panelWidth - 16));
+        for (Component line : source) {
+            if (!line.getString().isBlank()) wrapped.addAll(client.font.split(line, panelWidth - 16));
+        }
         int panelHeight = 12 + wrapped.size() * client.font.lineHeight;
         y = Math.max(8, Math.min(y, screenHeight - panelHeight - 8));
         context.fill(x, y, x + panelWidth, y + panelHeight, 0xCC101010);
