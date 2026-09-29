@@ -40,12 +40,21 @@ public final class SpellcastingRenderer {
         int height = client.getWindow().getGuiScaledHeight();
         Vec2 anchor = hotbar.origin.getPoint(width, height).add(hotbar.offset);
         float scale = BetterSpellcastingClient.config().hudScale / 100.0F;
+        int selectedIndex = -1;
+        for (int i = 0; i < slots.size(); i++) {
+            if (SpellcastingController.spellId(slots.get(i)).equals(SpellcastingController.hudSelectedSpell())) {
+                selectedIndex = i;
+                break;
+            }
+        }
         if (BetterSpellcastingClient.config().hudStyle == HudStyle.SINGLE) {
             int rowWidth = Math.round(slots.size() * SLOT_WIDTH * scale);
             int x = Math.round(anchor.x - rowWidth / 2.0F);
             int y = Math.round(anchor.y - SLOT_HEIGHT * scale);
             drawSlots(context, client, slots, tickDelta, x, y, scale,
                     BetterSpellcastingClient.config().shortcutCasting);
+            if (selectedIndex >= 0) drawSelectedBorder(context, x + selectedIndex * Math.max(1, Math.round(SLOT_WIDTH * scale)),
+                    y, scale);
         } else {
             int rows = Math.min(3, Math.max(1, (int) Math.ceil(slots.size() / 5.0)));
             int columns = (int) Math.ceil(slots.size() / (double) rows);
@@ -60,7 +69,24 @@ public final class SpellcastingRenderer {
                 int y = Math.round(anchor.y - totalHeight + row * rowHeight);
                 drawSlots(context, client, slots.subList(from, to), tickDelta, x, y, scale, false, from);
             }
+            if (selectedIndex >= 0) {
+                int row = selectedIndex / columns;
+                int count = Math.min(columns, slots.size() - row * columns);
+                int x = Math.round(anchor.x - Math.round(count * SLOT_WIDTH * scale) / 2.0F);
+                int y = Math.round(anchor.y - totalHeight + row * rowHeight);
+                drawSelectedBorder(context, x + (selectedIndex % columns) * Math.max(1, Math.round(SLOT_WIDTH * scale)),
+                        y, scale);
+            }
         }
+    }
+
+    private static void drawSelectedBorder(GuiGraphicsExtractor context, int x, int y, float scale) {
+        int width = Math.max(1, Math.round(SLOT_WIDTH * scale));
+        int height = Math.max(1, Math.round(SLOT_HEIGHT * scale));
+        context.fill(x - 2, y - 2, x + width + 2, y, 0xFFFFFFFF);
+        context.fill(x - 2, y + height, x + width + 2, y + height + 2, 0xFFFFFFFF);
+        context.fill(x - 2, y, x, y + height, 0xFFFFFFFF);
+        context.fill(x + width, y, x + width + 2, y + height, 0xFFFFFFFF);
     }
 
     private static void drawSlots(GuiGraphicsExtractor context, Minecraft client, List<SpellHotbar.Slot> slots,
@@ -88,12 +114,6 @@ public final class SpellcastingRenderer {
                     context.fill(sx + (slotWidth - iconSize) / 2, top,
                             sx + (slotWidth + iconSize) / 2, y + Math.round(3 * scale) + iconSize, 0x99000000);
                 }
-            }
-            if (SpellcastingController.spellId(slot).equals(SpellcastingController.hudSelectedSpell())) {
-                context.fill(sx - 2, y - 2, sx + slotWidth + 2, y, 0xFFFFFFFF);
-                context.fill(sx - 2, y + slotHeight, sx + slotWidth + 2, y + slotHeight + 2, 0xFFFFFFFF);
-                context.fill(sx - 2, y, sx, y + slotHeight, 0xFFFFFFFF);
-                context.fill(sx + slotWidth, y, sx + slotWidth + 2, y + slotHeight, 0xFFFFFFFF);
             }
             if (showKeys && indexOffset + i < 9) {
                 KeyMappingLabel.draw(context, client, SpellcastingController.shortcutKey(client, indexOffset + i),
@@ -185,7 +205,7 @@ public final class SpellcastingRenderer {
     private static void renderDetails(GuiGraphicsExtractor context, Minecraft client, Identifier spellId,
                                       int x, int y, int screenWidth, int screenHeight) {
         if (client.player == null) return;
-        List<Component> source = SpellTooltip.spellDescriptionWithDetails(spellId, client.player, ItemStack.EMPTY, 0);
+        List<Component> source = SpellTooltip.spellEntry(spellId, client.player, ItemStack.EMPTY, true, 0);
         int panelWidth = Math.min(250, Math.max(150, screenWidth - x - 8));
         List<net.minecraft.util.FormattedCharSequence> wrapped = new ArrayList<>();
         for (Component line : source) wrapped.addAll(client.font.split(line, panelWidth - 16));

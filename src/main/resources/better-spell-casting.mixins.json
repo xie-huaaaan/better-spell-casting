@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_25",
   "client": [
     "MinecraftClientMixin",
+    "MinecraftUseDelayAccessor",
     "SpellHotbarMixin",
     "SpellHotbarWidgetMixin",
     "OptionsScreenMixin"
