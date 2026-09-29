@@ -205,7 +205,11 @@ public final class SpellcastingRenderer {
     private static void renderDetails(GuiGraphicsExtractor context, Minecraft client, Identifier spellId,
                                       int x, int y, int screenWidth, int screenHeight) {
         if (client.player == null) return;
-        List<Component> source = SpellTooltip.spellEntry(spellId, client.player, ItemStack.EMPTY, true, 0);
+        List<Component> titleEntries = SpellTooltip.spellEntry(spellId, client.player, ItemStack.EMPTY, true, 0);
+        List<Component> source = new ArrayList<>();
+        titleEntries.stream().filter(line -> !line.getString().isBlank()).findFirst().ifPresent(source::add);
+        SpellTooltip.spellDescriptionWithDetails(spellId, client.player, ItemStack.EMPTY, 0).stream()
+                .filter(line -> !line.getString().isBlank()).forEach(source::add);
         int panelWidth = Math.min(250, Math.max(150, screenWidth - x - 8));
         List<net.minecraft.util.FormattedCharSequence> wrapped = new ArrayList<>();
         for (Component line : source) {
