@@ -2,9 +2,11 @@
 
 | English | [简体中文](README.zh-CN.md) |
 
-Better Spell Casting is a client-side overhaul of the Spell Engine casting workflow. It adds a radial selector, a clearer spell HUD, configurable casting keys, and optional left-click bow and crossbow controls.
+Better Spell Casting is a client-side overhaul of the [Spell Engine](https://github.com/ZsoltMolnarrr/SpellEngine) casting workflow. It adds a radial selector, a clearer spell HUD, configurable casting keys, and optional left-click bow and crossbow controls.
 
 The mod does not add spells, change spell data, or require installation on a server. It follows Spell Engine's own candidate ordering and availability rules, so content mods remain responsible for their own spells and dependencies.
+
+![Example Picture](./pic/example.png)
 
 ## Features
 
