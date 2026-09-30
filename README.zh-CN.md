@@ -2,9 +2,11 @@
 
 | [English](README.md) | 简体中文 |
 
-更好的施法操作（Better Spell Casting）是一个客户端模组，用于改进法术引擎（Spell Engine）的施法流程。它提供了轮盘选择、更清晰的法术栏、可配置的施法按键，以及可选的左键弓弩操作。
+更好的施法操作（Better Spell Casting）是一个客户端模组，用于改进[法术引擎（Spell Engine）](https://github.com/ZsoltMolnarrr/SpellEngine)的施法流程。它提供了轮盘选择、更清晰的法术栏、可配置的施法按键，以及可选的左键弓弩操作。
 
 本模组不会添加法术、修改法术数据，也不需要安装在服务器上。法术候选列表严格使用 Spell Engine 提供的顺序与可用性规则，内容模组仍然负责自己的法术及其依赖。
+
+![示例图片](./pic/example.zh-CN.png)
 
 ## 功能
 
